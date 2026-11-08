@@ -84,7 +84,7 @@ export default function Home() {
       />
 
       <PageHeader
-        eyebrow="Explore. Discover. Stay Ahead."
+        eyebrow="NEXORA"
         title="Home Dashboard"
         description={
           user

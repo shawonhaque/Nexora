@@ -34,7 +34,7 @@ export function TopBar({ onOpenMenu }: { onOpenMenu: () => void }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
   const { pathname } = useLocation();
-  const { user, isAdmin, signOut } = useAuth();
+  const { user, isAdmin, signOut, backendConfigured } = useAuth();
   const { notifications, markAllRead } = usePersonalization();
   const unread = notifications.filter((item) => !item.read).length;
 
@@ -166,11 +166,11 @@ export function TopBar({ onOpenMenu }: { onOpenMenu: () => void }) {
                 </div>
               )}
             </div>
-          ) : (
+          ) : backendConfigured ? (
             <Link to="/login" className="btn-primary !px-3.5 !py-2 text-xs sm:text-sm">
               Sign in
             </Link>
-          )}
+          ) : null}
         </div>
       </div>
     </header>

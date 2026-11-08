@@ -8,16 +8,14 @@ import { useAuth } from '../../context/AuthContext';
 export function Brand({ compact = false }: { compact?: boolean }) {
   return (
     <Link to="/" className="group flex items-center gap-2.5" aria-label="NEXORA home">
-      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-accent to-accent2 font-bold text-white shadow-card">
-        N
+      <span
+        aria-hidden="true"
+        className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-accent to-accent2 text-white shadow-card"
+      >
+        <Icon name="sparkle" className="h-[18px] w-[18px]" />
       </span>
       {!compact && (
-        <span className="flex flex-col leading-none">
-          <span className="text-[0.95rem] font-bold tracking-[0.18em] text-heading">NEXORA</span>
-          <span className="mt-1 font-mono text-[0.56rem] uppercase tracking-[0.14em] text-muted">
-            Explore. Discover. Stay Ahead.
-          </span>
-        </span>
+        <span className="text-[0.95rem] font-bold tracking-[0.18em] text-heading">NEXORA</span>
       )}
     </Link>
   );

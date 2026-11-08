@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { PageMeta } from '../components/layout/PageMeta';
 import { StateBlock } from '../components/ui/StateBlock';
+import { Icon } from '../components/news/ArticleCard';
 import { useAuth } from '../context/AuthContext';
 
 /**
@@ -54,8 +55,8 @@ export default function Login() {
       <div className="wrap flex min-h-[70vh] items-center justify-center py-16">
         <div className="w-full max-w-md">
           <div className="mb-8 text-center">
-            <span className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-accent to-accent2 text-lg font-bold text-white">
-              N
+            <span className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-accent to-accent2 text-white">
+              <Icon name="sparkle" className="h-6 w-6" />
             </span>
             <h1 className="mt-5 text-2xl">Sign in to NEXORA</h1>
             <p className="mt-2 text-sm text-muted">Admin access only. Accounts are created by the site owner.</p>
