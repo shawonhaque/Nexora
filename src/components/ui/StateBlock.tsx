@@ -21,8 +21,12 @@ export function StateBlock({
         ? 'border-amber-500/40 bg-amber-500/5'
         : 'border-line bg-surface';
   return (
-    <div className={`card flex flex-col items-center gap-3 px-6 py-12 text-center ${toneRing}`}>
-      {icon && <div className="text-2xl text-accent" aria-hidden="true">{icon}</div>}
+    <div className={`glass flex flex-col items-center gap-3 px-6 py-12 text-center ${toneRing}`}>
+      {icon && (
+        <div className="text-2xl text-accent" aria-hidden="true">
+          {icon}
+        </div>
+      )}
       <h3 className="text-base font-semibold">{title}</h3>
       {message && <p className="max-w-md text-sm leading-relaxed text-muted">{message}</p>}
       {action && <div className="mt-2">{action}</div>}
@@ -35,12 +39,12 @@ export function SkeletonGrid({ count = 6, className = '' }: { count?: number; cl
   return (
     <div className={`grid gap-6 sm:grid-cols-2 lg:grid-cols-3 ${className}`} aria-hidden="true">
       {Array.from({ length: count }).map((_, index) => (
-        <div key={index} className="card overflow-hidden">
-          <div className="aspect-[16/10] animate-pulse bg-elevated" />
+        <div key={index} className="glass overflow-hidden">
+          <div className="skeleton aspect-[16/10] rounded-none" />
           <div className="space-y-3 p-5">
-            <div className="h-3 w-20 animate-pulse rounded bg-elevated" />
-            <div className="h-4 w-full animate-pulse rounded bg-elevated" />
-            <div className="h-4 w-3/4 animate-pulse rounded bg-elevated" />
+            <div className="skeleton h-3 w-20" />
+            <div className="skeleton h-4 w-full" />
+            <div className="skeleton h-4 w-3/4" />
           </div>
         </div>
       ))}
@@ -49,16 +53,20 @@ export function SkeletonGrid({ count = 6, className = '' }: { count?: number; cl
 }
 
 /**
- * Notice shown when a page is rendering placeholder content because no
- * Supabase project is connected yet.
+ * Shown when the knowledge base cannot be read because no Supabase project is
+ * configured. It explains the state rather than showing placeholder records.
  */
-export function DemoNotice({ className = '' }: { className?: string }) {
+export function BackendNotice({ className = '' }: { className?: string }) {
   return (
-    <p
-      className={`rounded-xl border border-amber-500/35 bg-amber-500/5 px-4 py-3 text-xs leading-relaxed text-amber-600 dark:text-amber-300 ${className}`}
+    <div
+      className={`glass border-amber-500/35 bg-amber-500/5 px-5 py-4 text-sm leading-relaxed text-amber-700 dark:text-amber-300 ${className}`}
     >
-      <strong className="font-semibold">Demo content.</strong> These are placeholder records for layout preview.
-      Connect Supabase and publish real entries from the admin dashboard to replace them.
-    </p>
+      <p className="font-semibold">The knowledge base is not connected.</p>
+      <p className="mt-1 text-xs">
+        This section is published from a Supabase database. No project is configured for this deployment, so
+        there are no entries to show. The live feeds, search and library elsewhere on the site do not depend on
+        it and work normally.
+      </p>
+    </div>
   );
 }

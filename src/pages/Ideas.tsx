@@ -1,13 +1,12 @@
 import { PageMeta } from '../components/layout/PageMeta';
 import { Section } from '../components/ui/Section';
-import { DemoNotice, SkeletonGrid, StateBlock } from '../components/ui/StateBlock';
+import { BackendNotice, SkeletonGrid, StateBlock } from '../components/ui/StateBlock';
 import { IdeaCard } from '../components/content/Cards';
 import { useAsyncData } from '../hooks/useAsyncData';
 import { ideaService } from '../services';
-import { DEMO_IDEAS } from '../data/demo';
 
 export default function Ideas() {
-  const { data, loading, error, isDemo } = useAsyncData(() => ideaService.list(), DEMO_IDEAS, []);
+  const { data, loading, error, notConfigured } = useAsyncData(() => ideaService.list(), [], []);
 
   return (
     <>
@@ -21,7 +20,7 @@ export default function Ideas() {
         title="Ideas & notes"
         description="Short, working thoughts. Published ideas only — drafts stay private."
       >
-        {isDemo && <DemoNotice className="mb-8" />}
+        {notConfigured && <BackendNotice className="mb-8" />}
         {error && !loading && <StateBlock tone="error" title="Could not load ideas" message={error.message} />}
         {loading && <SkeletonGrid count={6} />}
         {!loading && !error && data.length === 0 && (

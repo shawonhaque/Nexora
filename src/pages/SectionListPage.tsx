@@ -2,11 +2,10 @@ import { useState } from 'react';
 import { PageMeta } from '../components/layout/PageMeta';
 import { Section } from '../components/ui/Section';
 import { ButtonLink } from '../components/ui/ButtonLink';
-import { DemoNotice, SkeletonGrid, StateBlock } from '../components/ui/StateBlock';
+import { BackendNotice, SkeletonGrid, StateBlock } from '../components/ui/StateBlock';
 import { PostCard } from '../components/content/Cards';
 import { useAsyncData } from '../hooks/useAsyncData';
 import { postService } from '../services';
-import { DEMO_POSTS } from '../data/demo';
 import type { PostRow } from '../lib/database.types';
 
 interface SectionPageProps {
@@ -30,15 +29,9 @@ const PAGE_SIZE = 9;
 export function SectionListPage({ section, eyebrow, title, description, basePath, intro }: SectionPageProps) {
   const [page, setPage] = useState(1);
 
-  const { data, loading, error, isDemo } = useAsyncData(
+  const { data, loading, error, notConfigured } = useAsyncData(
     () => postService.list({ section, page, pageSize: PAGE_SIZE }),
-    {
-      items: DEMO_POSTS.filter((post) => post.section === section) as PostRow[],
-      total: 0,
-      page: 1,
-      pageSize: PAGE_SIZE,
-      hasMore: false,
-    },
+    { items: [] as PostRow[], total: 0, page: 1, pageSize: PAGE_SIZE, hasMore: false },
     [section, page]
   );
 
@@ -48,7 +41,7 @@ export function SectionListPage({ section, eyebrow, title, description, basePath
     <>
       <PageMeta title={title} description={description} />
       <Section eyebrow={eyebrow} title={title} description={intro ?? description} titleAs="h1">
-        {isDemo && <DemoNotice className="mb-8" />}
+        {notConfigured && <BackendNotice className="mb-8" />}
 
         {error && !loading && (
           <StateBlock
@@ -77,7 +70,7 @@ export function SectionListPage({ section, eyebrow, title, description, basePath
           </div>
         )}
 
-        {!isDemo && (page > 1 || data.hasMore) && (
+        {!notConfigured && (page > 1 || data.hasMore) && (
           <nav className="mt-10 flex items-center justify-between gap-4" aria-label="Pagination">
             <button
               type="button"

@@ -207,6 +207,45 @@ export type SavedItemRow = {
   created_at: string;
 };
 
+export type UserInterestRow = {
+  user_id: string;
+  category: string;
+  created_at: string;
+};
+
+export type SavedArticleRow = {
+  id: string;
+  user_id: string;
+  article_id: string;
+  title: string;
+  link: string;
+  source: string;
+  category: string;
+  summary: string;
+  saved_at: string;
+};
+
+export type ReadingHistoryRow = {
+  user_id: string;
+  article_id: string;
+  title: string;
+  link: string;
+  source: string;
+  category: string;
+  viewed_at: string;
+};
+
+export type NotificationRow = {
+  id: string;
+  user_id: string;
+  title: string;
+  body: string;
+  link: string | null;
+  kind: string;
+  read: boolean;
+  created_at: string;
+};
+
 type TableDef<Row, Insert = Record<string, unknown>, Update = Record<string, unknown>> = {
   Row: Row;
   Insert: Insert;
@@ -229,6 +268,10 @@ export interface Database {
       ideas: TableDef<IdeaRow>;
       diary_entries: TableDef<DiaryEntryRow>;
       saved_items: TableDef<SavedItemRow>;
+      user_interests: TableDef<UserInterestRow>;
+      saved_articles: TableDef<SavedArticleRow>;
+      reading_history: TableDef<ReadingHistoryRow>;
+      notifications: TableDef<NotificationRow>;
     };
     Views: { [_ in never]: never };
     Functions: {

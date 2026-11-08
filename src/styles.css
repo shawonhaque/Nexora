@@ -9,28 +9,32 @@
 @layer base {
   :root {
     /* Light theme */
-    --c-bg: 248 250 253;
+    --c-bg: 247 249 253;
     --c-surface: 255 255 255;
     --c-elevated: 241 245 252;
-    --c-line: 214 222 236;
-    --c-fg: 26 32 48;
-    --c-heading: 12 18 34;
-    --c-muted: 92 104 128;
-    --c-accent: 55 94 232;
-    --c-accent2: 138 63 227;
+    --c-line: 212 220 236;
+    --c-fg: 28 33 51;
+    --c-heading: 10 15 32;
+    --c-muted: 94 106 132;
+    --c-accent: 124 58 237;   /* electric purple */
+    --c-accent2: 8 145 178;   /* cyan */
+    --c-glass: 255 255 255;
+    --c-glass-alpha: 0.72;
   }
 
   .dark {
-    /* Dark navy theme — the default brand look */
-    --c-bg: 7 11 24;
-    --c-surface: 13 18 34;
-    --c-elevated: 19 26 46;
-    --c-line: 38 48 74;
+    /* Deep navy — the default brand look */
+    --c-bg: 6 10 24;
+    --c-surface: 12 18 38;
+    --c-elevated: 19 27 51;
+    --c-line: 40 51 82;
     --c-fg: 226 232 245;
     --c-heading: 255 255 255;
-    --c-muted: 152 165 194;
-    --c-accent: 91 140 255;
-    --c-accent2: 168 85 247;
+    --c-muted: 150 163 196;
+    --c-accent: 167 139 250;  /* electric purple */
+    --c-accent2: 34 211 238;  /* cyan */
+    --c-glass: 18 26 50;
+    --c-glass-alpha: 0.55;
   }
 
   html {
@@ -58,6 +62,16 @@
 
   .card {
     @apply rounded-2xl border border-line bg-surface shadow-card;
+  }
+
+  /* Glassmorphism panel — the primary surface for the redesigned UI. */
+  .glass {
+    background-color: rgb(var(--c-glass) / var(--c-glass-alpha));
+    @apply rounded-2xl border border-line/70 shadow-card backdrop-blur-xl;
+  }
+
+  .glass-hover {
+    @apply transition duration-300 hover:-translate-y-1 hover:border-accent/50 hover:shadow-lift;
   }
 
   .card-hover {
@@ -91,6 +105,11 @@
            font-mono text-[0.7rem] uppercase tracking-wider text-muted;
   }
 
+  .chip-accent {
+    @apply inline-flex items-center gap-1.5 rounded-full border border-accent/40 bg-accent/10 px-2.5 py-1
+           text-[0.72rem] font-medium text-accent;
+  }
+
   .eyebrow {
     @apply font-mono text-[0.72rem] uppercase tracking-[0.22em] text-accent;
   }
@@ -102,6 +121,15 @@
 
   .label {
     @apply mb-1.5 block text-sm font-medium text-heading;
+  }
+
+  /* Sidebar navigation link. */
+  .side-link {
+    @apply flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition
+           text-muted hover:bg-elevated hover:text-heading;
+  }
+  .side-link[aria-current='page'] {
+    @apply bg-accent/10 text-accent;
   }
 
   /* Editorial body copy for long-form article content. */
@@ -131,8 +159,8 @@
   }
   .bg-brand-glow {
     background-image:
-      radial-gradient(60% 55% at 15% 0%, rgb(var(--c-accent) / 0.20), transparent 62%),
-      radial-gradient(50% 50% at 88% 8%, rgb(var(--c-accent2) / 0.18), transparent 60%);
+      radial-gradient(58% 52% at 12% -4%, rgb(var(--c-accent) / 0.26), transparent 62%),
+      radial-gradient(52% 50% at 90% 4%, rgb(var(--c-accent2) / 0.22), transparent 60%);
   }
   .text-gradient {
     background-image: linear-gradient(115deg, rgb(var(--c-accent)), rgb(var(--c-accent2)));
@@ -144,7 +172,26 @@
   .scrollbar-thin::-webkit-scrollbar-thumb {
     @apply rounded-full bg-line;
   }
+  /* Skeleton shimmer for loading states. */
+  .skeleton {
+    @apply relative overflow-hidden rounded-lg bg-elevated;
+  }
+  .skeleton::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background-image: linear-gradient(90deg, transparent, rgb(var(--c-line) / 0.55), transparent);
+    animation: shimmer 1.6s infinite;
+  }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 }
+
+@keyframes shimmer {
+  100% { transform: translateX(100%); }
+}
+
 
 /* Respect users who ask for less motion. */
 @media (prefers-reduced-motion: reduce) {

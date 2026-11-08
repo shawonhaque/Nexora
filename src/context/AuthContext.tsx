@@ -3,6 +3,7 @@ import type { Session, User } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 import { isSupabaseConfigured } from '../lib/env';
 import { authService, profileService } from '../services';
+import { syncPersonalization } from '../hooks/usePersonalization';
 import type { AppRole } from '../lib/database.types';
 
 interface AuthValue {
@@ -39,9 +40,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setRole(data ?? 'user');
   }, []);
 
+  // Load the user's interests, saved items and history for whichever mode
+  // applies (cloud when signed in, local otherwise).
+  useEffect(() => {
+    void syncPersonalization(session?.user.id ?? null);
+  }, [session?.user.id]);
+
   useEffect(() => {
     if (!supabase) {
       setLoading(false);
+      void syncPersonalization(null);
       return;
     }
 

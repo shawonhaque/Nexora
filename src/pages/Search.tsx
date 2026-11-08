@@ -1,191 +1,315 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
+import { ArticleCard, ArticleSkeleton, EmptyState, ErrorState, Icon } from '../components/news/ArticleCard';
+import { PageBody, PageHeader } from '../components/ui/PageHeader';
 import { PageMeta } from '../components/layout/PageMeta';
-import { Section } from '../components/ui/Section';
-import { ButtonLink } from '../components/ui/ButtonLink';
-import { DemoNotice, StateBlock } from '../components/ui/StateBlock';
-import { searchService, type SearchResults } from '../services';
-import { isSupabaseConfigured } from '../lib/env';
-import { DEMO_BOOKS, DEMO_IDEAS, DEMO_POSTS, DEMO_STUDY } from '../data/demo';
+import { runIntelligentSearch, type SearchAnswer } from '../services/intelligentSearch';
+import { CATEGORY_META, NEWS_CATEGORIES } from '../services/newsService';
+import type { NewsCategory } from '../lib/newsTypes';
 
-/** Builds the same result shape from demo data when no backend is connected. */
-function demoResults(query: string): SearchResults {
-  const q = query.toLowerCase();
-  const match = (value: string | null | undefined) => Boolean(value && value.toLowerCase().includes(q));
+const HISTORY_KEY = 'nexora:search-history';
 
-  const posts = DEMO_POSTS.filter((p) => match(p.title) || match(p.excerpt));
-  const books = DEMO_BOOKS.filter((b) => match(b.title) || match(b.author));
-  const study = DEMO_STUDY.filter((s) => match(s.title) || match(s.description));
-  const ideas = DEMO_IDEAS.filter((i) => match(i.title) || match(i.description));
-
-  return {
-    query,
-    hits: [
-      ...posts.map((p) => ({ id: p.id, title: p.title, href: `/${p.section}/${p.slug}`, group: 'posts' as const, section: p.section, excerpt: p.excerpt })),
-      ...books.map((b) => ({ id: b.id, title: b.title, href: `/books/${b.slug ?? b.id}`, group: 'books' as const, section: 'books', excerpt: b.author ? `by ${b.author}` : b.description })),
-      ...study.map((s) => ({ id: s.id, title: s.title, href: `/study/resources/${s.slug ?? s.id}`, group: 'study' as const, section: 'study', excerpt: s.subject })),
-      ...ideas.map((i) => ({ id: i.id, title: i.title, href: '/ideas', group: 'ideas' as const, section: 'ideas', excerpt: i.description })),
-    ],
-    counts: { posts: posts.length, books: books.length, study: study.length, ideas: ideas.length },
-  };
+function readHistory(): string[] {
+  try {
+    const raw = localStorage.getItem(HISTORY_KEY);
+    return raw ? (JSON.parse(raw) as string[]) : [];
+  } catch {
+    return [];
+  }
 }
 
-const GROUP_LABEL: Record<string, string> = {
-  posts: 'Articles',
-  books: 'Books',
-  study: 'Study material',
-  ideas: 'Ideas',
-};
+function writeHistory(entries: string[]): void {
+  try {
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(entries.slice(0, 12)));
+  } catch {
+    /* storage unavailable; history simply will not persist */
+  }
+}
 
 export default function Search() {
   const [params, setParams] = useSearchParams();
-  const initial = params.get('q') ?? '';
-  const [input, setInput] = useState(initial);
-  const [query, setQuery] = useState(initial);
-  const [results, setResults] = useState<SearchResults | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [input, setInput] = useState(params.get('q') ?? '');
+  const [answer, setAnswer] = useState<SearchAnswer | null>(null);
+  const [state, setState] = useState<'idle' | 'loading' | 'done' | 'error'>('idle');
+  const [error, setError] = useState('');
+  const [category, setCategory] = useState<NewsCategory | 'all'>('all');
+  const [history, setHistory] = useState<string[]>(readHistory);
 
-  // Debounce so typing does not fire a request per keystroke.
-  useEffect(() => {
-    const handle = window.setTimeout(() => setQuery(input.trim()), 300);
-    return () => window.clearTimeout(handle);
-  }, [input]);
-
-  useEffect(() => {
-    setParams(query ? { q: query } : {}, { replace: true });
-  }, [query, setParams]);
-
-  useEffect(() => {
-    if (query.length < 2) {
-      setResults(null);
-      setError(null);
+  const execute = useCallback(async (rawQuery: string) => {
+    const query = rawQuery.trim();
+    if (!query) {
+      setState('idle');
+      setAnswer(null);
       return;
     }
-
-    if (!isSupabaseConfigured) {
-      setResults(demoResults(query));
-      setError(null);
-      return;
-    }
-
-    let active = true;
-    setLoading(true);
-    setError(null);
-    searchService
-      .search(query)
-      .then((result) => {
-        if (!active) return;
-        if (result.error) setError(result.error.message);
-        else setResults(result.data);
-      })
-      .finally(() => {
-        if (active) setLoading(false);
+    setState('loading');
+    setError('');
+    try {
+      const result = await runIntelligentSearch(query);
+      setAnswer(result);
+      setState('done');
+      setHistory((current) => {
+        const next = [query, ...current.filter((item) => item !== query)];
+        writeHistory(next);
+        return next;
       });
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Search failed.');
+      setState('error');
+    }
+  }, []);
 
-    return () => {
-      active = false;
-    };
-  }, [query]);
+  // Run the query present in the URL, so a shared link reproduces the search.
+  useEffect(() => {
+    const initial = params.get('q');
+    if (initial) {
+      setInput(initial);
+      void execute(initial);
+    }
+  }, [params, execute]);
 
-  const grouped = useMemo(() => {
-    if (!results) return [];
-    const order: Array<'posts' | 'books' | 'study' | 'ideas'> = ['posts', 'books', 'study', 'ideas'];
-    return order
-      .map((group) => ({ group, items: results.hits.filter((hit) => hit.group === group) }))
-      .filter((entry) => entry.items.length > 0);
-  }, [results]);
+  function submit(event: React.FormEvent) {
+    event.preventDefault();
+    const query = input.trim();
+    setParams(query ? { q: query } : {});
+    void execute(query);
+  }
+
+  const results = useMemo(() => {
+    if (!answer) return [];
+    if (category === 'all') return answer.results;
+    return answer.results.filter((item) => item.category === category);
+  }, [answer, category]);
 
   return (
     <>
       <PageMeta
-        title="Search"
-        description="Search across news, knowledge articles, books, study material and ideas."
+        title="Intelligent Search"
+        description="Search every live feed, get an extractive summary with citations, and follow related questions."
+        noIndex
+      />
+      <PageHeader
+        eyebrow="Search"
+        title="Intelligent Search"
+        description="Ask a question in plain language. Results are ranked from real published articles, and the summary quotes them directly."
+        icon="search"
       />
 
-      <Section eyebrow="Search" title="Search NEXORA" titleAs="h1">
-        <form
-          role="search"
-          className="flex max-w-2xl flex-col gap-2.5 sm:flex-row"
-          onSubmit={(event) => {
-            event.preventDefault();
-            setQuery(input.trim());
-          }}
-        >
-          <label htmlFor="global-search" className="sr-only">Search NEXORA</label>
+      <PageBody className="space-y-7">
+        <form onSubmit={submit} role="search" className="flex flex-wrap gap-2">
+          <label htmlFor="search-input" className="sr-only">
+            Search query
+          </label>
           <input
-            id="global-search"
+            id="search-input"
             type="search"
             value={input}
             onChange={(event) => setInput(event.target.value)}
-            placeholder="Search articles, books, study material, ideas…"
-            className="field h-12 flex-1"
+            placeholder="e.g. What is happening with AI regulation?"
+            className="field max-w-2xl flex-1"
             autoComplete="off"
           />
-          <button type="submit" className="btn-primary h-12 px-6">Search</button>
+          <button type="submit" className="btn-primary" disabled={state === 'loading'}>
+            <Icon name="sparkle" className="h-4 w-4" />
+            {state === 'loading' ? 'Searching…' : 'Search'}
+          </button>
         </form>
 
-        {!isSupabaseConfigured && (
-          <DemoNotice className="mt-6 max-w-2xl" />
-        )}
-
-        {query.length > 0 && query.length < 2 && (
-          <p className="mt-8 text-sm text-muted">Type at least two characters to search.</p>
-        )}
-
-        {loading && (
-          <p className="mt-8 text-sm text-muted" aria-live="polite">Searching…</p>
-        )}
-
-        {error && !loading && (
-          <div className="mt-8">
-            <StateBlock tone="error" title="Search failed" message={error} />
+        {history.length > 0 && state === 'idle' && (
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-xs text-muted">Recent:</span>
+            {history.map((item) => (
+              <button
+                key={item}
+                type="button"
+                onClick={() => {
+                  setInput(item);
+                  setParams({ q: item });
+                  void execute(item);
+                }}
+                className="chip transition hover:border-accent/50 hover:text-accent"
+              >
+                {item}
+              </button>
+            ))}
+            <button
+              type="button"
+              onClick={() => {
+                setHistory([]);
+                writeHistory([]);
+              }}
+              className="text-xs text-muted underline transition hover:text-accent"
+            >
+              Clear
+            </button>
           </div>
         )}
 
-        {!loading && !error && results && query.length >= 2 && (
-          <div className="mt-10" aria-live="polite">
-            <p className="mb-7 text-sm text-muted">
-              {results.hits.length === 0
-                ? `No results for “${results.query}”.`
-                : `${results.hits.length} result${results.hits.length === 1 ? '' : 's'} for “${results.query}”.`}
-            </p>
+        {state === 'loading' && (
+          <div className="space-y-5">
+            <div className="glass space-y-3 p-5">
+              <div className="skeleton h-5 w-40" />
+              <div className="skeleton h-4 w-full" />
+              <div className="skeleton h-4 w-11/12" />
+            </div>
+            <ArticleSkeleton count={6} />
+          </div>
+        )}
 
-            {results.hits.length === 0 && (
-              <StateBlock
-                title="Nothing matched that search"
-                message="Try a different term, or browse a section from the navigation."
-                action={<ButtonLink to="/" variant="ghost">Back to home</ButtonLink>}
+        {state === 'error' && <ErrorState message={error} onRetry={() => void execute(input)} />}
+
+        {state === 'done' && answer && (
+          <>
+            {answer.summary ? (
+              <section className="glass overflow-hidden" aria-labelledby="answer-heading">
+                <div className="flex items-center gap-2 border-b border-line/70 bg-accent/5 px-5 py-3">
+                  <Icon name="sparkle" className="h-4 w-4 text-accent" />
+                  <h2 id="answer-heading" className="text-sm font-semibold text-heading">
+                    Summary extracted from sources
+                  </h2>
+                  <span className="ml-auto font-mono text-[0.68rem] uppercase tracking-wider text-muted">
+                    {answer.citations.length} citation{answer.citations.length === 1 ? '' : 's'}
+                  </span>
+                </div>
+
+                <div className="p-5">
+                  <p className="text-[1.02rem] leading-8 text-fg">{answer.summary}</p>
+
+                  <p className="mt-4 rounded-xl border border-line bg-elevated/40 px-4 py-3 text-xs leading-relaxed text-muted">
+                    <strong className="font-semibold text-fg">How this was produced.</strong> These sentences are
+                    quoted from the articles listed below — nothing here is generated text. Each number links to
+                    its source. This is not a language-model answer.
+                  </p>
+
+                  <ol className="mt-5 space-y-3">
+                    {answer.citations.map((citation) => (
+                      <li key={citation.index} className="flex gap-3 text-sm">
+                        <span className="grid h-6 w-6 shrink-0 place-items-center rounded-lg bg-accent/12 font-mono text-xs font-bold text-accent">
+                          {citation.index}
+                        </span>
+                        <div className="min-w-0">
+                          <a
+                            href={citation.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="font-medium text-heading transition hover:text-accent"
+                          >
+                            {citation.title}
+                          </a>
+                          <p className="mt-0.5 font-mono text-xs text-muted">{citation.source}</p>
+                        </div>
+                      </li>
+                    ))}
+                  </ol>
+                </div>
+              </section>
+            ) : (
+              <EmptyState
+                title="No summary available"
+                message={`No article in the current feeds matched "${answer.query}". Try a broader term, or browse a topic feed.`}
               />
             )}
 
-            <div className="grid gap-10">
-              {grouped.map(({ group, items }) => (
-                <section key={group} aria-labelledby={`group-${group}`}>
-                  <h2 id={`group-${group}`} className="mb-4 font-mono text-xs uppercase tracking-[0.18em] text-muted">
-                    {GROUP_LABEL[group]} ({items.length})
+            {answer.relatedQuestions.length > 0 && (
+              <section aria-labelledby="related-heading">
+                <h2 id="related-heading" className="mb-3 text-lg font-semibold">
+                  Related questions
+                </h2>
+                <ul className="flex flex-wrap gap-2">
+                  {answer.relatedQuestions.map((question) => (
+                    <li key={question}>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setInput(question);
+                          setParams({ q: question });
+                          void execute(question);
+                        }}
+                        className="rounded-xl border border-line bg-elevated/40 px-3.5 py-2 text-left text-sm text-muted transition hover:border-accent/50 hover:text-accent"
+                      >
+                        {question}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+
+            {answer.results.length > 0 && (
+              <section aria-labelledby="results-heading">
+                <div className="mb-4 flex flex-wrap items-center gap-3">
+                  <h2 id="results-heading" className="text-lg font-semibold">
+                    Sources ({results.length})
                   </h2>
-                  <ul className="grid gap-3">
-                    {items.map((hit) => (
-                      <li key={`${hit.group}-${hit.id}`}>
-                        <Link
-                          to={hit.href}
-                          className="card card-hover block px-5 py-4"
-                        >
-                          <span className="block text-sm font-semibold text-heading">{hit.title}</span>
-                          {hit.excerpt && (
-                            <span className="mt-1 block text-xs leading-relaxed text-muted">{hit.excerpt}</span>
-                          )}
-                        </Link>
-                      </li>
+                  <div className="ml-auto flex flex-wrap gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => setCategory('all')}
+                      className={`rounded-lg px-2.5 py-1.5 text-xs font-medium transition ${
+                        category === 'all' ? 'bg-accent/12 text-accent' : 'text-muted hover:bg-elevated'
+                      }`}
+                    >
+                      All
+                    </button>
+                    {NEWS_CATEGORIES.map((item) => (
+                      <button
+                        key={item}
+                        type="button"
+                        onClick={() => setCategory(item)}
+                        className={`rounded-lg px-2.5 py-1.5 text-xs font-medium transition ${
+                          category === item ? 'bg-accent/12 text-accent' : 'text-muted hover:bg-elevated'
+                        }`}
+                      >
+                        {CATEGORY_META[item].label}
+                      </button>
                     ))}
-                  </ul>
-                </section>
-              ))}
-            </div>
-          </div>
+                  </div>
+                </div>
+
+                {results.length ? (
+                  <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+                    {results.map((article) => (
+                      <ArticleCard key={article.id} article={article} />
+                    ))}
+                  </div>
+                ) : (
+                  <EmptyState
+                    title="No results in this topic"
+                    message="This search matched nothing in the selected topic. Choose another topic or clear the filter."
+                  />
+                )}
+              </section>
+            )}
+          </>
         )}
-      </Section>
+
+        {state === 'idle' && (
+          <section aria-label="Search help" className="glass p-5">
+            <h2 className="text-base font-semibold">What you can search</h2>
+            <ul className="mt-3 space-y-2 text-sm leading-relaxed text-muted">
+              <li className="flex gap-2">
+                <Icon name="check" className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
+                <span>Plain-language questions — terms are matched against every headline and summary.</span>
+              </li>
+              <li className="flex gap-2">
+                <Icon name="check" className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
+                <span>Source names, for example “Nature” or “Al Jazeera”.</span>
+              </li>
+              <li className="flex gap-2">
+                <Icon name="check" className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
+                <span>Topic words such as “regulation”, “model”, “climate” or “funding”.</span>
+              </li>
+            </ul>
+            <p className="mt-4 text-xs leading-relaxed text-muted">
+              Search covers the articles currently in the feed snapshot. It does not search the open web, and it
+              does not generate claims — summaries quote the retrieved articles directly.
+            </p>
+            <Link to="/explore" className="btn-ghost mt-4 !py-2 text-xs">
+              <Icon name="compass" className="h-4 w-4" /> Or browse everything instead
+            </Link>
+          </section>
+        )}
+      </PageBody>
     </>
   );
 }

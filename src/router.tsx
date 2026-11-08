@@ -1,14 +1,24 @@
-/* This module owns routing, not rendering. The small fallback components
-   below exist only to give each lazy route a boundary, so the fast-refresh
-   export rule does not apply. */
+/* This module owns routing, not rendering. The fallback component below
+   exists only to give each lazy route a boundary, so the fast-refresh export
+   rule does not apply. */
 /* eslint-disable react-refresh/only-export-components */
 import { lazy, Suspense } from 'react';
 import { createBrowserRouter } from 'react-router-dom';
 import { RootLayout } from './components/layout/RootLayout';
 import { ProtectedRoute } from './components/layout/ProtectedRoute';
 import Home from './pages/Home';
+import CategoryPage from './pages/CategoryPage';
 
 // Route-level code splitting keeps the first paint small; each page loads on demand.
+const Explore = lazy(() => import('./pages/Explore'));
+const Search = lazy(() => import('./pages/Search'));
+const Saved = lazy(() => import('./pages/Saved'));
+const History = lazy(() => import('./pages/History'));
+const Profile = lazy(() => import('./pages/Profile'));
+const Settings = lazy(() => import('./pages/Settings'));
+const About = lazy(() => import('./pages/About'));
+
+// Knowledge base (Supabase-backed, admin published)
 const SectionListPage = lazy(() =>
   import('./pages/SectionListPage').then((module) => ({ default: module.SectionListPage }))
 );
@@ -18,7 +28,8 @@ const BookDetail = lazy(() => import('./pages/BookDetail'));
 const Study = lazy(() => import('./pages/Study'));
 const Ideas = lazy(() => import('./pages/Ideas'));
 const Bookmarks = lazy(() => import('./pages/Bookmarks'));
-const Search = lazy(() => import('./pages/Search'));
+
+// Auth and admin
 const Login = lazy(() => import('./pages/Login'));
 const Admin = lazy(() => import('./pages/Admin'));
 const AdminSection = lazy(() => import('./pages/AdminSection'));
@@ -26,11 +37,11 @@ const NotFound = lazy(() => import('./pages/NotFound'));
 
 function PageFallback() {
   return (
-    <div className="wrap py-24" aria-busy="true" aria-live="polite">
-      <div className="mx-auto max-w-md space-y-4">
-        <div className="h-5 w-32 animate-pulse rounded bg-elevated" />
-        <div className="h-9 w-full animate-pulse rounded bg-elevated" />
-        <div className="h-24 w-full animate-pulse rounded-2xl bg-elevated" />
+    <div className="px-4 py-20 sm:px-6 lg:px-8" aria-busy="true" aria-live="polite">
+      <div className="max-w-2xl space-y-4">
+        <div className="skeleton h-5 w-32" />
+        <div className="skeleton h-10 w-3/4" />
+        <div className="skeleton h-28 w-full" />
       </div>
       <p className="sr-only">Loading page…</p>
     </div>
@@ -49,15 +60,34 @@ export const router = createBrowserRouter(
       children: [
         { index: true, element: <Home /> },
 
-        // Section listings
+        // Discovery
+        { path: 'explore', element: withSuspense(<Explore />) },
+        { path: 'search', element: withSuspense(<Search />) },
+
+        // Live feeds — one page per category, each driven by real publisher feeds
+        { path: 'world', element: withSuspense(<CategoryPage category="world" />) },
+        { path: 'technology', element: withSuspense(<CategoryPage category="technology" />) },
+        { path: 'ai', element: withSuspense(<CategoryPage category="ai" />) },
+        { path: 'science', element: withSuspense(<CategoryPage category="science" />) },
+        { path: 'education', element: withSuspense(<CategoryPage category="education" />) },
+        { path: 'business', element: withSuspense(<CategoryPage category="business" />) },
+
+        // Personal library
+        { path: 'saved', element: withSuspense(<Saved />) },
+        { path: 'history', element: withSuspense(<History />) },
+        { path: 'profile', element: withSuspense(<Profile />) },
+        { path: 'settings', element: withSuspense(<Settings />) },
+        { path: 'about', element: withSuspense(<About />) },
+
+        // Knowledge base — admin-published content from Supabase
         {
           path: 'news',
           element: withSuspense(
             <SectionListPage
               section="news"
-              eyebrow="News"
-              title="News"
-              description="Timely reporting and updates across the topics NEXORA follows."
+              eyebrow="Knowledge base"
+              title="News archive"
+              description="Longer pieces published from the NEXORA dashboard, alongside the live feeds."
               basePath="/news"
             />
           ),
@@ -67,7 +97,7 @@ export const router = createBrowserRouter(
           element: withSuspense(
             <SectionListPage
               section="knowledge"
-              eyebrow="Knowledge"
+              eyebrow="Knowledge base"
               title="Knowledge"
               description="Explanations that connect ideas across fields."
               basePath="/knowledge"
@@ -79,7 +109,7 @@ export const router = createBrowserRouter(
           element: withSuspense(
             <SectionListPage
               section="writing"
-              eyebrow="Writing"
+              eyebrow="Knowledge base"
               title="My Writing"
               description="Essays, reflections and longer-form work."
               basePath="/writing"
@@ -91,25 +121,21 @@ export const router = createBrowserRouter(
           element: withSuspense(
             <SectionListPage
               section="learning"
-              eyebrow="Learning"
+              eyebrow="Knowledge base"
               title="Learning"
               description="Guides on learning effectively and studying with structure."
               basePath="/learning"
             />
           ),
         },
-
-        // Article detail
         { path: 'news/:slug', element: withSuspense(<ArticlePage />) },
         { path: 'knowledge/:slug', element: withSuspense(<ArticlePage />) },
         { path: 'writing/:slug', element: withSuspense(<ArticlePage />) },
         { path: 'learning/:slug', element: withSuspense(<ArticlePage />) },
 
-        // Books
+        // Books and study
         { path: 'books', element: withSuspense(<Books />) },
         { path: 'books/:slug', element: withSuspense(<BookDetail />) },
-
-        // Study
         { path: 'study', element: withSuspense(<Study />) },
         {
           path: 'study/resources',
@@ -123,11 +149,8 @@ export const router = createBrowserRouter(
             />
           ),
         },
-
-        // Other sections
         { path: 'ideas', element: withSuspense(<Ideas />) },
         { path: 'bookmarks', element: withSuspense(<Bookmarks />) },
-        { path: 'search', element: withSuspense(<Search />) },
         { path: 'login', element: withSuspense(<Login />) },
 
         // Admin (guarded; RLS enforces the same rule server-side)

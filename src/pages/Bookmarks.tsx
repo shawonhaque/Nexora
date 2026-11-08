@@ -1,15 +1,14 @@
 import { useMemo, useState } from 'react';
 import { PageMeta } from '../components/layout/PageMeta';
 import { Section } from '../components/ui/Section';
-import { DemoNotice, SkeletonGrid, StateBlock } from '../components/ui/StateBlock';
+import { BackendNotice, SkeletonGrid, StateBlock } from '../components/ui/StateBlock';
 import { BookmarkCard } from '../components/content/Cards';
 import { useAsyncData } from '../hooks/useAsyncData';
 import { bookmarkService } from '../services';
-import { DEMO_BOOKMARKS } from '../data/demo';
 
 export default function Bookmarks() {
   const [category, setCategory] = useState('');
-  const { data, loading, error, isDemo } = useAsyncData(() => bookmarkService.list(), DEMO_BOOKMARKS, []);
+  const { data, loading, error, notConfigured } = useAsyncData(() => bookmarkService.list(), [], []);
 
   const categories = useMemo(
     () => Array.from(new Set(data.map((item) => item.category).filter(Boolean))) as string[],
@@ -52,7 +51,7 @@ export default function Bookmarks() {
           ) : undefined
         }
       >
-        {isDemo && <DemoNotice className="mb-8" />}
+        {notConfigured && <BackendNotice className="mb-8" />}
         {error && !loading && <StateBlock tone="error" title="Could not load bookmarks" message={error.message} />}
         {loading && <SkeletonGrid count={6} />}
         {!loading && !error && visible.length === 0 && (
