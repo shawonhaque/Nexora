@@ -3,10 +3,12 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "NEXORA \u2014 Your World of Knowledge. Personal digital knowledge platform.",
+  "description": "NEXORA — Your World of Knowledge. Personal digital knowledge platform.",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build && node scripts/postbuild.mjs",
+    "build": "node scripts/feeds.mjs && tsc -b && vite build && node scripts/postbuild.mjs",
+    "build:app": "tsc -b && vite build && node scripts/postbuild.mjs",
+    "feeds": "node scripts/feeds.mjs",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src --ext .ts,.tsx --max-warnings 0"

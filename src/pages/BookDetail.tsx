@@ -4,18 +4,16 @@ import { ButtonLink } from '../components/ui/ButtonLink';
 import { StateBlock } from '../components/ui/StateBlock';
 import { useAsyncData } from '../hooks/useAsyncData';
 import { bookService } from '../services';
-import { DEMO_BOOKS } from '../data/demo';
 import { formatDate, safeUrl } from '../lib/format';
+import type { BookRow } from '../lib/database.types';
 
 const BOOK_TYPE = 'https://schema.org/Book';
 
 export default function BookDetail() {
   const { slug = '' } = useParams<{ slug: string }>();
-  const fallback = DEMO_BOOKS.find((book) => book.slug === slug) ?? DEMO_BOOKS[0];
-
-  const { data: book, loading, error, isDemo } = useAsyncData(
+  const { data: book, loading, error } = useAsyncData(
     () => bookService.getBySlug(slug),
-    fallback,
+    null as BookRow | null,
     [slug]
   );
 
@@ -102,11 +100,6 @@ export default function BookDetail() {
               </div>
             )}
 
-            {isDemo && (
-              <p className="mt-4 rounded-xl border border-amber-500/35 bg-amber-500/5 px-4 py-3 text-xs text-amber-600 dark:text-amber-300">
-                <strong className="font-semibold">Demo book.</strong> Placeholder record for layout preview.
-              </p>
-            )}
           </div>
 
           <div>

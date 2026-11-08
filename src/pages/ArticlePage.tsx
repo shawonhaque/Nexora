@@ -4,8 +4,8 @@ import { ButtonLink } from '../components/ui/ButtonLink';
 import { StateBlock } from '../components/ui/StateBlock';
 import { useAsyncData } from '../hooks/useAsyncData';
 import { postService } from '../services';
-import { DEMO_POSTS } from '../data/demo';
 import { estimateReadingTime, formatDate, readingLabel, safeUrl } from '../lib/format';
+import type { PostRow } from '../lib/database.types';
 
 const ROUTE_LABEL: Record<string, string> = {
   news: 'News',
@@ -51,11 +51,10 @@ export default function ArticlePage() {
   const { slug = '', section = 'knowledge' } = useParams<{ slug: string; section?: string }>();
   const label = ROUTE_LABEL[section] ?? 'Article';
 
-  const fallback = DEMO_POSTS.find((post) => post.slug === slug) ?? DEMO_POSTS[0];
-
-  const { data: post, loading, error, isDemo } = useAsyncData(
+  // No placeholder record: if the article cannot be read, the page says so.
+  const { data: post, loading, error } = useAsyncData(
     () => postService.getBySlug(slug),
-    fallback,
+    null as PostRow | null,
     [slug]
   );
 
@@ -129,11 +128,6 @@ export default function ArticlePage() {
 
           <h1 className="text-3xl leading-tight sm:text-4xl lg:text-[2.7rem]">{post.title}</h1>
           {post.subtitle && <p className="mt-4 text-lg leading-relaxed text-muted">{post.subtitle}</p>}
-          {isDemo && (
-            <p className="mt-5 rounded-xl border border-amber-500/35 bg-amber-500/5 px-4 py-3 text-xs text-amber-600 dark:text-amber-300">
-              <strong className="font-semibold">Demo article.</strong> Placeholder text for layout preview only.
-            </p>
-          )}
         </header>
 
         {cover && (

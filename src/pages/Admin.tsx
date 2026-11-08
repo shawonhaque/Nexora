@@ -4,8 +4,8 @@ import { PageMeta } from '../components/layout/PageMeta';
 import { useAuth } from '../context/AuthContext';
 import { useAsyncData } from '../hooks/useAsyncData';
 import { postService, bookService, studyService, categoryService } from '../services';
-import { DEMO_BOOKS, DEMO_CATEGORIES, DEMO_POSTS, DEMO_STUDY } from '../data/demo';
 import { formatDateTime } from '../lib/format';
+import type { BookRow, CategoryRow, PostRow, StudyResourceRow } from '../lib/database.types';
 
 const ADMIN_SECTIONS = [
   { to: '/admin', label: 'Overview', end: true },
@@ -46,7 +46,7 @@ function ContentTable({ title, section }: { title: string; section?: string }) {
   const { data, loading, error, reload } = useAsyncData(
     () => postService.listForAdmin({ section, status: filter === 'all' ? undefined : filter, pageSize: 50 }),
     {
-      items: DEMO_POSTS.filter((p) => !section || p.section === section),
+      items: [] as PostRow[],
       total: 0, page: 1, pageSize: 50, hasMore: false,
     },
     [section, filter]
@@ -118,12 +118,12 @@ function ContentTable({ title, section }: { title: string; section?: string }) {
 export default function Admin() {
   const { user } = useAuth();
 
-  const posts = useAsyncData(() => postService.listForAdmin({ pageSize: 1 }), { items: DEMO_POSTS, total: 0, page: 1, pageSize: 1, hasMore: false }, []);
+  const posts = useAsyncData(() => postService.listForAdmin({ pageSize: 1 }), { items: [] as PostRow[], total: 0, page: 1, pageSize: 1, hasMore: false }, []);
   const published = useAsyncData(() => postService.listForAdmin({ status: 'published', pageSize: 1 }), { items: [], total: 0, page: 1, pageSize: 1, hasMore: false }, []);
   const drafts = useAsyncData(() => postService.listForAdmin({ status: 'draft', pageSize: 1 }), { items: [], total: 0, page: 1, pageSize: 1, hasMore: false }, []);
-  const books = useAsyncData(() => bookService.listForAdmin({ pageSize: 1 }), { items: DEMO_BOOKS, total: 0, page: 1, pageSize: 1, hasMore: false }, []);
-  const study = useAsyncData(() => studyService.list({ pageSize: 1 }), { items: DEMO_STUDY, total: 0, page: 1, pageSize: 1, hasMore: false }, []);
-  const categories = useAsyncData(() => categoryService.list(), DEMO_CATEGORIES, []);
+  const books = useAsyncData(() => bookService.listForAdmin({ pageSize: 1 }), { items: [] as BookRow[], total: 0, page: 1, pageSize: 1, hasMore: false }, []);
+  const study = useAsyncData(() => studyService.list({ pageSize: 1 }), { items: [] as StudyResourceRow[], total: 0, page: 1, pageSize: 1, hasMore: false }, []);
+  const categories = useAsyncData(() => categoryService.list(), [] as CategoryRow[], []);
 
   const stats = [
     { label: 'Total posts', value: posts.data.total || null },

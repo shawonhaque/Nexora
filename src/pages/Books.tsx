@@ -2,15 +2,16 @@ import { useState } from 'react';
 import { PageMeta } from '../components/layout/PageMeta';
 import { Section } from '../components/ui/Section';
 import { ButtonLink } from '../components/ui/ButtonLink';
-import { DemoNotice, SkeletonGrid, StateBlock } from '../components/ui/StateBlock';
+import { BackendNotice, SkeletonGrid, StateBlock } from '../components/ui/StateBlock';
 import { BookCard } from '../components/content/Cards';
 import { useAsyncData } from '../hooks/useAsyncData';
 import { bookService } from '../services';
-import { DEMO_BOOKS } from '../data/demo';
+import type { BookRow } from '../lib/database.types';
 
 const PAGE_SIZE = 12;
 
 const LANGUAGE_FILTERS = ['English', 'Bengali', 'Arabic', 'Hindi'] as const;
+const EMPTY_PAGE = { items: [] as BookRow[], total: 0, page: 1, pageSize: PAGE_SIZE, hasMore: false };
 
 export default function Books() {
   const [page, setPage] = useState(1);
@@ -18,22 +19,17 @@ export default function Books() {
   const [query, setQuery] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
 
-  const { data, loading, error, isDemo } = useAsyncData(
+  const { data, loading, error, notConfigured } = useAsyncData(
     () => bookService.list({ page, pageSize: PAGE_SIZE, language: language || undefined, search: searchTerm || undefined }),
-    {
-      items: DEMO_BOOKS,
-      total: DEMO_BOOKS.length,
-      page: 1,
-      pageSize: PAGE_SIZE,
-      hasMore: false,
-    },
+    EMPTY_PAGE,
     [page, language, searchTerm]
   );
 
-  const featured = useAsyncData(() => bookService.list({ featured: true, pageSize: 4 }), {
-    items: DEMO_BOOKS.filter((b) => b.is_featured),
-    total: 0, page: 1, pageSize: 4, hasMore: false,
-  }, []);
+  const featured = useAsyncData(
+    () => bookService.list({ featured: true, pageSize: 4 }),
+    EMPTY_PAGE,
+    []
+  );
 
   return (
     <>
@@ -117,7 +113,7 @@ export default function Books() {
           </div>
         }
       >
-        {isDemo && <DemoNotice className="mb-8" />}
+        {notConfigured && <BackendNotice className="mb-8" />}
 
         {error && !loading && (
           <StateBlock tone="error" title="Could not load the library" message={error.message} />
@@ -154,7 +150,7 @@ export default function Books() {
               ))}
             </div>
 
-            {!isDemo && (
+            {!notConfigured && (
               <nav className="mt-10 flex items-center justify-between gap-4" aria-label="Pagination">
                 <button type="button" className="btn-ghost" onClick={() => setPage((v) => Math.max(1, v - 1))} disabled={page === 1}>
                   ← Previous

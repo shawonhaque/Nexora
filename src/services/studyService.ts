@@ -1,6 +1,6 @@
 import { requireClient, run, DEFAULT_PAGE_SIZE, escapeFilter, type Paginated } from './base';
 import type { Result } from '../lib/errors';
-import type { StudyResourceRow } from '../lib/database.types';
+import type { StudyResourceRow, SubjectRow } from '../lib/database.types';
 
 export interface StudyQuery {
   status?: 'draft' | 'published' | 'archived';
@@ -44,6 +44,19 @@ export const studyService = {
         pageSize,
         hasMore: page * pageSize < total,
       };
+    });
+  },
+
+  /** Published subjects, ordered as configured. */
+  async listSubjects(): Promise<Result<SubjectRow[]>> {
+    return run(async () => {
+      const { data, error } = await requireClient()
+        .from('subjects')
+        .select('*')
+        .eq('status', 'published')
+        .order('display_order', { ascending: true });
+      if (error) throw error;
+      return (data ?? []) as SubjectRow[];
     });
   },
 

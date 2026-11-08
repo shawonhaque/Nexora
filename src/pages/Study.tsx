@@ -2,25 +2,31 @@ import { useState } from 'react';
 import { PageMeta } from '../components/layout/PageMeta';
 import { Section } from '../components/ui/Section';
 import { ButtonLink } from '../components/ui/ButtonLink';
-import { DemoNotice, SkeletonGrid, StateBlock } from '../components/ui/StateBlock';
+import { BackendNotice, SkeletonGrid, StateBlock } from '../components/ui/StateBlock';
 import { ResourceCard } from '../components/content/Cards';
 import { useAsyncData } from '../hooks/useAsyncData';
 import { studyService } from '../services';
-import { DEMO_STUDY, DEMO_SUBJECTS } from '../data/demo';
 import { Link } from 'react-router-dom';
+import type { StudyResourceRow } from '../lib/database.types';
 
 const PAGE_SIZE = 9;
 const RESOURCE_TYPES = ['Notes', 'PDF', 'Guide', 'Worksheet', 'Video', 'Tutorial'] as const;
+
+const EMPTY_PAGE = { items: [] as StudyResourceRow[], total: 0, page: 1, pageSize: PAGE_SIZE, hasMore: false };
 
 export default function Study() {
   const [page, setPage] = useState(1);
   const [resourceType, setResourceType] = useState('');
 
-  const { data, loading, error, isDemo } = useAsyncData(
+  const { data, loading, error, notConfigured } = useAsyncData(
     () => studyService.list({ page, pageSize: PAGE_SIZE, resourceType: resourceType || undefined }),
-    { items: DEMO_STUDY, total: DEMO_STUDY.length, page: 1, pageSize: PAGE_SIZE, hasMore: false },
+    EMPTY_PAGE,
     [page, resourceType]
   );
+
+  // Subjects are part of the knowledge base too, so they come from the same
+  // backend rather than a hardcoded list.
+  const subjects = useAsyncData(() => studyService.listSubjects(), [], []);
 
   return (
     <>
@@ -47,7 +53,7 @@ export default function Study() {
 
       <Section eyebrow="Subjects" title="Popular subjects" description="Jump straight into a subject area.">
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {DEMO_SUBJECTS.map((subject) => (
+          {subjects.data.map((subject) => (
             <Link key={subject.id} to="/study/resources" className="card card-hover flex items-start gap-4 p-6">
               <span
                 className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-elevated font-mono text-lg text-accent"
@@ -93,7 +99,7 @@ export default function Study() {
           </div>
         }
       >
-        {isDemo && <DemoNotice className="mb-8" />}
+        {notConfigured && <BackendNotice className="mb-8" />}
 
         {error && !loading && <StateBlock tone="error" title="Could not load study resources" message={error.message} />}
 
@@ -118,7 +124,7 @@ export default function Study() {
                 />
               ))}
             </div>
-            {!isDemo && (
+            {!notConfigured && (
               <nav className="mt-10 flex items-center justify-between gap-4" aria-label="Pagination">
                 <button type="button" className="btn-ghost" onClick={() => setPage((v) => Math.max(1, v - 1))} disabled={page === 1}>
                   ← Previous
