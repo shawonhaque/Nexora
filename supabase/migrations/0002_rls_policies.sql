@@ -83,14 +83,19 @@ language plpgsql
 security definer
 set search_path = public, pg_temp
 as $fn$
+declare
+  jwt_role text := nullif(current_setting('request.jwt.claims', true), '');
 begin
   if new.role is distinct from old.role then
     -- A direct database session (the SQL editor, or a migration such as 0004)
-    -- carries no end-user JWT: neither a subject nor a role claim is set. Every
-    -- request through the API does carry them, even anonymously, so browser
-    -- traffic can never take this branch.
-    if nullif(current_setting('request.jwt.claim.sub', true), '') is null
-       and nullif(current_setting('request.jwt.claim.role', true), '') is null then
+    -- carries no JWT claims at all, so request.jwt.claims is unset. Every
+    -- request through PostgREST sets it, including anonymous ones.
+    --
+    -- Note: newer Supabase no longer populates the individual
+    -- request.jwt.claim.sub / .role settings, so those must not be used to
+    -- detect an API session — doing so treats every API caller as a trusted
+    -- direct connection and allows self-promotion.
+    if jwt_role is null then
       return new;
     end if;
 
@@ -98,7 +103,8 @@ begin
     -- editing their own row. Self-promotion is never permitted, even for an
     -- admin.
     if not public.is_admin() or new.id = auth.uid() then
-      raise exception 'Changing a role requires another administrator';
+      raise exception 'Changing a role requires another administrator'
+        using errcode = '42501';
     end if;
   end if;
   return new;

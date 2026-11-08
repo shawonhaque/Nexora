@@ -9,9 +9,14 @@
 -- There is no default password anywhere in this project, and no public
 -- sign-up route that could create an admin.
 --
--- Replace the email below with your own address, then run this file once in
--- the Supabase SQL editor. It is safe to re-run: it only ever sets the role of
--- the named account.
+-- Set admin_email below to your own address, then run this file once in the
+-- Supabase SQL editor. It is safe to re-run: it only ever sets the role of the
+-- named account.
+--
+-- If the account does not exist yet, this migration does nothing and says so.
+-- It never creates an account and never grants admin to an unknown address,
+-- so it is safe to run at any point in a fresh setup (including `supabase db
+-- reset`, where no users exist yet).
 -- ============================================================================
 
 do $do$
@@ -24,9 +29,10 @@ begin
   where email = admin_email;
 
   if target_id is null then
-    raise exception
-      'No auth user found for %. Create the user in Authentication -> Users first, then re-run this migration.',
+    raise notice
+      'No auth user found for %. Skipping admin grant. Create the account in Authentication -> Users first, then re-run this file with admin_email set to that address.',
       admin_email;
+    return;
   end if;
 
   insert into public.profiles (id, role)
