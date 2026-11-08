@@ -14,9 +14,12 @@ interface AuthValue {
   role: AppRole | null;
   isAdmin: boolean;
   backendConfigured: boolean;
+  /** True when the visitor arrived through a password-recovery link. */
+  recovery: boolean;
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
   requestPasswordReset: (email: string) => Promise<{ error: string | null }>;
+  updatePassword: (newPassword: string) => Promise<{ error: string | null }>;
 }
 
 const AuthContext = createContext<AuthValue | null>(null);
@@ -25,6 +28,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [session, setSession] = useState<Session | null>(null);
   const [role, setRole] = useState<AppRole | null>(null);
+  /**
+   * Supabase emits PASSWORD_RECOVERY when the visitor lands from a reset link.
+   * The event fires once per page load, so it is captured here rather than in
+   * the session itself, and cleared when the password is changed.
+   */
+  const [recovery, setRecovery] = useState(false);
 
   /**
    * The role is read from the database-backed profiles table, never from
@@ -63,7 +72,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
     });
 
-    const { data: subscription } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+    const { data: subscription } = supabase.auth.onAuthStateChange((event, nextSession) => {
+      if (event === 'PASSWORD_RECOVERY') setRecovery(true);
       setSession(nextSession);
       void loadRole(nextSession?.user.id ?? null);
     });
@@ -89,6 +99,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error: error?.message ?? null };
   }, []);
 
+  const updatePassword = useCallback(async (newPassword: string) => {
+    const { error } = await authService.updatePassword(newPassword);
+    if (!error) setRecovery(false);
+    return { error: error?.message ?? null };
+  }, []);
+
   const value = useMemo<AuthValue>(
     () => ({
       loading,
@@ -97,11 +113,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       role,
       isAdmin: role === 'admin',
       backendConfigured: isSupabaseConfigured,
+      recovery,
       signIn,
       signOut,
       requestPasswordReset,
+      updatePassword,
     }),
-    [loading, session, role, signIn, signOut, requestPasswordReset]
+    [loading, session, role, recovery, signIn, signOut, requestPasswordReset, updatePassword]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

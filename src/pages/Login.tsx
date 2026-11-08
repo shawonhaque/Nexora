@@ -13,13 +13,36 @@ import { useAuth } from '../context/AuthContext';
  * role is verified against the database on every protected request.
  */
 export default function Login() {
-  const { signIn, requestPasswordReset, backendConfigured, user } = useAuth();
+  const { signIn, requestPasswordReset, updatePassword, backendConfigured, recovery, user } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirm, setConfirm] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+
+  async function onSetPassword(event: FormEvent) {
+    event.preventDefault();
+    setError(null);
+    setNotice(null);
+    if (password.length < 8) {
+      setError('Choose a password of at least 8 characters.');
+      return;
+    }
+    if (password !== confirm) {
+      setError('The two passwords do not match.');
+      return;
+    }
+    setBusy(true);
+    const result = await updatePassword(password);
+    setBusy(false);
+    if (result.error) {
+      setError(result.error);
+      return;
+    }
+    navigate('/admin', { replace: true });
+  }
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
@@ -75,7 +98,58 @@ export default function Login() {
             />
           )}
 
-          {backendConfigured && user && (
+          {backendConfigured && recovery && (
+            <form onSubmit={onSetPassword} className="card space-y-5 p-6" noValidate>
+              <div>
+                <h2 className="text-lg font-semibold text-heading">Choose a new password</h2>
+                <p className="mt-1.5 text-sm text-muted">
+                  You opened a password reset link. Set a new password to finish signing in.
+                </p>
+              </div>
+
+              <div>
+                <label htmlFor="new-password" className="label">New password</label>
+                <input
+                  id="new-password"
+                  type="password"
+                  required
+                  minLength={8}
+                  autoComplete="new-password"
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  className="field"
+                  placeholder="At least 8 characters"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="confirm-password" className="label">Confirm password</label>
+                <input
+                  id="confirm-password"
+                  type="password"
+                  required
+                  minLength={8}
+                  autoComplete="new-password"
+                  value={confirm}
+                  onChange={(event) => setConfirm(event.target.value)}
+                  className="field"
+                  placeholder="Repeat the password"
+                />
+              </div>
+
+              {error && (
+                <p role="alert" className="rounded-xl border border-red-500/40 bg-red-500/5 px-4 py-3 text-sm text-red-600 dark:text-red-400">
+                  {error}
+                </p>
+              )}
+
+              <button type="submit" className="btn-primary w-full" disabled={busy}>
+                {busy ? 'Saving…' : 'Set password and continue'}
+              </button>
+            </form>
+          )}
+
+          {backendConfigured && !recovery && user && (
             <StateBlock
               title="You are already signed in"
               message="Continue to the dashboard, or sign out from the header."
@@ -87,7 +161,7 @@ export default function Login() {
             />
           )}
 
-          {backendConfigured && !user && (
+          {backendConfigured && !recovery && !user && (
             <form onSubmit={onSubmit} className="card space-y-5 p-6" noValidate>
               <div>
                 <label htmlFor="email" className="label">Email</label>

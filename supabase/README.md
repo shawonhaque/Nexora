@@ -71,6 +71,12 @@ There is no public sign-up, and no default password anywhere in the project.
 The trigger from `0001` creates a `profiles` row with role `user` for every new
 account, so step 2 is what actually grants admin. Re-running it is harmless.
 
+If you would rather not choose a password for the account, create the user with
+no password and send yourself a reset link from **Authentication → Users → Send
+recovery**. The `/login` route renders a set-password form when the visitor
+arrives from that link, so the first password is always chosen by the account
+owner and never passes through a migration or a chat message.
+
 To confirm it worked:
 
 ```sql
