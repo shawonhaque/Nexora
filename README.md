@@ -38,7 +38,24 @@ The site runs with no backend configured. Public pages show clearly-labelled
 placeholder content from `src/data/demo.ts`, and the admin area says the backend
 is not connected rather than pretending to work.
 
-To connect a real database, see [`supabase/README.md`](supabase/README.md).
+To run against a real database locally (Docker required):
+
+```bash
+npx supabase start        # boots Postgres, Auth, Storage and the REST API
+npx supabase db reset     # applies migrations, then supabase/seed.sql
+```
+
+`supabase start` prints the API URL and anon key. Put them in `.env.local`:
+
+```
+VITE_SUPABASE_URL=http://127.0.0.1:54321
+VITE_SUPABASE_ANON_KEY=<anon key from the output>
+```
+
+Then `npm run dev`. Public pages read live rows and the demo notice disappears.
+Create the first admin account as described in [`supabase/README.md`](supabase/README.md).
+
+To connect a hosted project instead, see [`supabase/README.md`](supabase/README.md).
 
 ### Scripts
 
