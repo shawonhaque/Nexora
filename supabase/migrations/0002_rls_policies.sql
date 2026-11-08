@@ -85,8 +85,18 @@ set search_path = public, pg_temp
 as $fn$
 begin
   if new.role is distinct from old.role then
-    -- Allow only when the caller is already an admin AND is not editing their
-    -- own row. Self-promotion is never permitted, even for an admin.
+    -- A direct database session (the SQL editor, or a migration such as 0004)
+    -- carries no end-user JWT: neither a subject nor a role claim is set. Every
+    -- request through the API does carry them, even anonymously, so browser
+    -- traffic can never take this branch.
+    if nullif(current_setting('request.jwt.claim.sub', true), '') is null
+       and nullif(current_setting('request.jwt.claim.role', true), '') is null then
+      return new;
+    end if;
+
+    -- Otherwise allow only when the caller is already an admin AND is not
+    -- editing their own row. Self-promotion is never permitted, even for an
+    -- admin.
     if not public.is_admin() or new.id = auth.uid() then
       raise exception 'Changing a role requires another administrator';
     end if;
