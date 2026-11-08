@@ -6,11 +6,16 @@ frontend, and none of it is automated by the build.
 
 ## What works without Supabase
 
-The site builds and runs with no backend configured. Every public page renders
-placeholder content from `src/data/demo.ts` and shows a "Demo content" notice.
-Search, filtering, pagination and routing all work. What does **not** work
-without Supabase, by design, is sign-in and the admin dashboard — those show a
-clear "not connected" message rather than pretending to work.
+The site builds and runs with no backend configured. Every public page is fully
+live: news comes from publisher RSS feeds bundled at build time, Hacker News and
+Wikipedia are fetched directly in the browser, and the personal library (saved
+articles, reading history, interests, notifications) falls back to `localStorage`
+so a guest gets the complete experience with nothing to sign up for.
+
+What does **not** work without Supabase, by design, is sign-in, the admin
+dashboard, and syncing that library across devices. When the backend is absent
+the site hides the sign-in entry point entirely rather than leading to a page
+that can only report a missing backend.
 
 ## 1. Create the project
 
@@ -41,6 +46,7 @@ Run these in order, in the Supabase **SQL editor**, or with the Supabase CLI:
 | `migrations/0002_rls_policies.sql` | Row Level Security on every table plus the `is_admin()` helper |
 | `migrations/0003_storage.sql` | The three storage buckets and their policies |
 | `migrations/0004_first_admin.sql` | Grants the admin role to one existing account |
+| `migrations/0005_personalization.sql` | Tables backing interests, saved articles, reading history and notifications |
 
 With the CLI:
 
@@ -102,13 +108,23 @@ only ever handed out as short-lived signed URLs.
 
 ## 7. Deploying to GitHub Pages
 
-```bash
-npm run build
-```
+The deploy workflow (`.github/workflows/deploy.yml`) reads the two Supabase
+values from **repository variables**, not from a committed file. Add them once:
 
-The build writes to `dist/`. GitHub Pages serves a project site from
-`/<repo>/`, which is why `vite.config.ts` defaults the base path to `/Nexora/`.
-Override it when the repository name differs:
+**Settings → Secrets and variables → Actions → Variables → New repository variable**
+
+| Name | Value |
+| --- | --- |
+| `VITE_SUPABASE_URL` | your project URL |
+| `VITE_SUPABASE_ANON_KEY` | your anon public key |
+
+The next push to `main` then builds against the live backend. Until these exist
+the deployed build runs in guest mode with sign-in hidden, which is the intended
+fallback rather than an error.
+
+Locally, `npm run build` writes to `dist/`. GitHub Pages serves a project site
+from `/<repo>/`, which is why `vite.config.ts` defaults the base path to
+`/Nexora/`. Override it when the repository name differs:
 
 ```bash
 VITE_BASE=/your-repo/ npm run build
