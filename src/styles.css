@@ -1,0 +1,162 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ---------------------------------------------------------------
+   Design tokens. Values are RGB triplets so Tailwind's alpha
+   modifier (<alpha-value>) works for every brand colour.
+   --------------------------------------------------------------- */
+@layer base {
+  :root {
+    /* Light theme */
+    --c-bg: 248 250 253;
+    --c-surface: 255 255 255;
+    --c-elevated: 241 245 252;
+    --c-line: 214 222 236;
+    --c-fg: 26 32 48;
+    --c-heading: 12 18 34;
+    --c-muted: 92 104 128;
+    --c-accent: 55 94 232;
+    --c-accent2: 138 63 227;
+  }
+
+  .dark {
+    /* Dark navy theme — the default brand look */
+    --c-bg: 7 11 24;
+    --c-surface: 13 18 34;
+    --c-elevated: 19 26 46;
+    --c-line: 38 48 74;
+    --c-fg: 226 232 245;
+    --c-heading: 255 255 255;
+    --c-muted: 152 165 194;
+    --c-accent: 91 140 255;
+    --c-accent2: 168 85 247;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-bg text-fg font-sans antialiased;
+  }
+
+  /* Visible, consistent focus ring for keyboard users. */
+  :focus-visible {
+    @apply outline-none ring-2 ring-accent ring-offset-2 ring-offset-bg;
+  }
+
+  h1, h2, h3, h4 {
+    @apply text-heading font-semibold tracking-tight;
+  }
+}
+
+@layer components {
+  .wrap {
+    @apply mx-auto w-full max-w-wrap px-5 sm:px-7 lg:px-10;
+  }
+
+  .card {
+    @apply rounded-2xl border border-line bg-surface shadow-card;
+  }
+
+  .card-hover {
+    @apply transition duration-300 hover:-translate-y-1 hover:border-accent/45 hover:shadow-lift;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold
+           transition duration-200 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .btn-primary {
+    @apply btn text-white shadow-card;
+    background-image: linear-gradient(120deg, rgb(var(--c-accent)), rgb(var(--c-accent2)));
+  }
+
+  .btn-primary:hover {
+    @apply -translate-y-0.5 shadow-lift;
+  }
+
+  .btn-ghost {
+    @apply btn border border-line bg-surface/60 text-fg hover:border-accent/60 hover:text-accent;
+  }
+
+  .btn-quiet {
+    @apply btn text-muted hover:bg-elevated hover:text-heading;
+  }
+
+  .chip {
+    @apply inline-flex items-center rounded-lg border border-line bg-elevated px-2.5 py-1
+           font-mono text-[0.7rem] uppercase tracking-wider text-muted;
+  }
+
+  .eyebrow {
+    @apply font-mono text-[0.72rem] uppercase tracking-[0.22em] text-accent;
+  }
+
+  .field {
+    @apply w-full rounded-xl border border-line bg-surface px-3.5 py-2.5 text-sm text-fg
+           placeholder:text-muted/70 focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/30;
+  }
+
+  .label {
+    @apply mb-1.5 block text-sm font-medium text-heading;
+  }
+
+  /* Editorial body copy for long-form article content. */
+  .prose-nexora {
+    @apply text-[1.02rem] leading-8 text-fg;
+  }
+  .prose-nexora h2 { @apply mt-10 mb-3 text-2xl; }
+  .prose-nexora h3 { @apply mt-8 mb-2 text-xl; }
+  .prose-nexora p { @apply mb-5 text-muted; }
+  .prose-nexora ul { @apply mb-5 list-disc space-y-2 pl-6 text-muted; }
+  .prose-nexora ol { @apply mb-5 list-decimal space-y-2 pl-6 text-muted; }
+  .prose-nexora blockquote {
+    @apply my-6 border-l-2 border-accent pl-5 text-lg italic text-heading;
+  }
+  .prose-nexora a { @apply text-accent underline underline-offset-2; }
+  .prose-nexora code {
+    @apply rounded bg-elevated px-1.5 py-0.5 font-mono text-[0.85em] text-accent2;
+  }
+}
+
+@layer utilities {
+  .bg-grid {
+    background-image:
+      linear-gradient(to right, rgb(var(--c-line) / 0.35) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(var(--c-line) / 0.35) 1px, transparent 1px);
+    background-size: 46px 46px;
+  }
+  .bg-brand-glow {
+    background-image:
+      radial-gradient(60% 55% at 15% 0%, rgb(var(--c-accent) / 0.20), transparent 62%),
+      radial-gradient(50% 50% at 88% 8%, rgb(var(--c-accent2) / 0.18), transparent 60%);
+  }
+  .text-gradient {
+    background-image: linear-gradient(115deg, rgb(var(--c-accent)), rgb(var(--c-accent2)));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar { height: 8px; width: 8px; }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    @apply rounded-full bg-line;
+  }
+}
+
+/* Respect users who ask for less motion. */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+@media print {
+  .no-print { display: none !important; }
+  body { background: #fff; color: #000; }
+}

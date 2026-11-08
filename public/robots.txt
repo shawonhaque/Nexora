@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+
+# Private areas must never be indexed.
+Disallow: /admin
+Disallow: /login
+Disallow: /bookmarks
+Disallow: /study/planner
+Disallow: /study/my-notes
+Disallow: /study/dashboard
+
+Sitemap: https://shawonhaque.github.io/Nexora/sitemap.xml
