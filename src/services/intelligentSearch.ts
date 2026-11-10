@@ -3,22 +3,24 @@
  *
  * What this does, and what it does not do, stated plainly because it matters:
  *
- *  - It ranks real articles retrieved from the publisher feeds by matching the
- *    query against titles, summaries and source names. The ranking is
- *    deterministic and runs in the browser.
+ *  - It retrieves real articles from the publisher feeds and ranks them with a
+ *    BM25-style scoring function computed in the browser. The ranking is
+ *    deterministic and reproducible.
  *  - The "summary" is extractive: it selects the most relevant sentences that
  *    already exist in the retrieved articles. It does not generate new claims,
  *    and every sentence carries a citation to the article it came from.
+ *  - The relevance score shown next to each result is a normalised BM25 score,
+ *    not a probability that the answer is correct.
  *
- * No language model is called here, because doing so would need an API key,
- * and an API key cannot be shipped in a static front-end. Rather than pretend,
- * the interface labels the summary as "extracted from sources" and links each
+ * No language model is called here, because doing so would need an API key, and
+ * an API key cannot be shipped in a static front-end. Rather than pretend, the
+ * interface labels the summary as "extracted from sources" and links each
  * sentence to its origin. If a generation backend is added later, only
  * `buildExtractiveSummary` needs replacing.
  */
 
 import type { NewsArticle } from '../lib/newsTypes';
-import { searchArticles } from './newsService';
+import { getAllArticles } from './newsService';
 
 export interface Citation {
   index: number;
@@ -29,15 +31,31 @@ export interface Citation {
   publishedAt: string;
 }
 
+/** One ranked result together with why it ranked where it did. */
+export interface RankedResult {
+  article: NewsArticle;
+  /** Normalised BM25 score in [0, 1]. */
+  score: number;
+  /** Terms from the query that this article matched. */
+  matched: string[];
+}
+
 export interface SearchAnswer {
   query: string;
   /** Sentences drawn verbatim from the retrieved articles. */
   summary: string;
   citations: Citation[];
   relatedQuestions: string[];
+  /** Ranked results, best first. */
   results: NewsArticle[];
-  /** Terms the query was matched against. */
+  /** Ranked results with their scores, for the results list. */
+  ranked: RankedResult[];
+  /** Terms the query was matched against, after stop-word removal. */
   matchedTerms: string[];
+  /** Terms the query mentioned that do not appear in any retrieved article. */
+  unmatchedTerms: string[];
+  /** Terms offered as corrections for likely misspellings. */
+  suggestions: string[];
 }
 
 const STOP_WORDS = new Set([
@@ -47,8 +65,8 @@ const STOP_WORDS = new Set([
   'as', 'at', 'by', 'from', 'about', 'into', 'over', 'after', 'before', 'than',
   'then', 'there', 'here', 'do', 'does', 'did', 'can', 'could', 'should',
   'would', 'will', 'shall', 'may', 'might', 'must', 'i', 'you', 'we', 'they',
-  'he', 'she', 'them', 'us', 'me', 'my', 'your', 'our', 'their', 'me', 'tell',
-  'give', 'show', 'find', 'latest', 'recent', 'news', 'explain', 'about',
+  'he', 'she', 'them', 'us', 'me', 'my', 'your', 'our', 'their', 'tell',
+  'give', 'show', 'find', 'latest', 'recent', 'news', 'explain',
 ]);
 
 /** Extracts the meaningful terms from a natural-language question. */
@@ -59,6 +77,105 @@ export function extractTerms(query: string): string[] {
     .split(/\s+/)
     .map((term) => term.trim())
     .filter((term) => term.length > 1 && !STOP_WORDS.has(term));
+}
+
+function tokenize(text: string): string[] {
+  return text
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}\s-]/gu, ' ')
+    .split(/\s+/)
+    .filter((token) => token.length > 1);
+}
+
+/** Cheap Levenshtein distance, capped so long strings do not blow up. */
+function editDistance(a: string, b: string): number {
+  if (Math.abs(a.length - b.length) > 2) return 99;
+  const rows = a.length + 1;
+  const cols = b.length + 1;
+  const grid = Array.from({ length: rows }, () => new Array<number>(cols).fill(0));
+  for (let i = 0; i < rows; i += 1) grid[i][0] = i;
+  for (let j = 0; j < cols; j += 1) grid[0][j] = j;
+  for (let i = 1; i < rows; i += 1) {
+    for (let j = 1; j < cols; j += 1) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      grid[i][j] = Math.min(grid[i - 1][j] + 1, grid[i][j - 1] + 1, grid[i - 1][j - 1] + cost);
+    }
+  }
+  return grid[a.length][b.length];
+}
+
+/**
+ * Ranks articles against a query using BM25, the standard bag-of-words
+ * relevance function. Field weights boost title and source matches, which are
+ * stronger signals than a match somewhere in the body text.
+ */
+function rankBm25(
+  articles: NewsArticle[],
+  terms: string[],
+  limit: number
+): { ranked: RankedResult[]; documentFrequency: Map<string, number> } {
+  const k1 = 1.5;
+  const b = 0.75;
+
+  // One document per article: title and source are repeated so a match there
+  // counts for more, which is the field-weighting part of the score.
+  const docs = articles.map((article) => {
+    const weighted = [
+      article.title, article.title, article.title,
+      article.source, article.source,
+      article.summary, article.summary,
+      article.category,
+    ]
+      .filter(Boolean)
+      .join(' ');
+    const tokens = tokenize(weighted);
+    const counts = new Map<string, number>();
+    for (const token of tokens) counts.set(token, (counts.get(token) ?? 0) + 1);
+    return { article, tokens, counts };
+  });
+
+  const totalDocs = docs.length || 1;
+  const avgLength = docs.reduce((sum, doc) => sum + doc.tokens.length, 0) / totalDocs || 1;
+
+  const documentFrequency = new Map<string, number>();
+  for (const term of terms) {
+    let df = 0;
+    for (const doc of docs) if (doc.counts.has(term)) df += 1;
+    documentFrequency.set(term, df);
+  }
+
+  const scored = docs.map((doc) => {
+    let score = 0;
+    const matched: string[] = [];
+    for (const term of terms) {
+      const frequency = doc.counts.get(term) ?? 0;
+      if (!frequency) continue;
+      matched.push(term);
+      const df = documentFrequency.get(term) ?? 0;
+      const idf = Math.log(1 + (totalDocs - df + 0.5) / (df + 0.5));
+      const denominator = frequency + k1 * (1 - b + (b * doc.tokens.length) / avgLength);
+      score += idf * ((frequency * (k1 + 1)) / denominator);
+    }
+    return { article: doc.article, score, matched };
+  });
+
+  const best = scored.reduce((max, entry) => Math.max(max, entry.score), 0);
+  const ranked = scored
+    .filter((entry) => entry.score > 0)
+    .map((entry) => ({
+      article: entry.article,
+      // Normalised to [0, 1] so the number shown in the UI is comparable across queries.
+      score: best > 0 ? entry.score / best : 0,
+      matched: entry.matched,
+    }))
+    .sort(
+      (a, b2) =>
+        b2.score - a.score ||
+        (b2.article.publishedAt || '').localeCompare(a.article.publishedAt || '')
+    )
+    .slice(0, limit);
+
+  return { ranked, documentFrequency };
 }
 
 function splitSentences(text: string): string[] {
@@ -144,8 +261,7 @@ function buildRelatedQuestions(results: NewsArticle[], terms: string[]): string[
     questions.push(`How do ${sources[0]} and ${sources[1]} differ in their coverage of ${topic}?`);
   }
 
-  const recent = results.slice(0, 6);
-  if (recent.length >= 3) {
+  if (results.slice(0, 6).length >= 3) {
     questions.push(`What is the most recent development in ${topic}?`);
   }
 
@@ -155,26 +271,73 @@ function buildRelatedQuestions(results: NewsArticle[], terms: string[]): string[
   return questions.slice(0, 4);
 }
 
-/** Runs the full search: retrieval, ranking, summary and related questions. */
+/**
+ * Finds the closest vocabulary term for a term that matched nothing, so a
+ * misspelling can be offered back as "did you mean". Only suggests a
+ * replacement when the edit distance is small relative to the term length.
+ */
+function suggestCorrections(
+  terms: string[],
+  vocabulary: Map<string, number>
+): string[] {
+  const suggestions: string[] = [];
+  for (const term of terms) {
+    if (vocabulary.has(term) || term.length < 4) continue;
+    let best: { word: string; distance: number } | null = null;
+    for (const word of vocabulary.keys()) {
+      if (Math.abs(word.length - term.length) > 2) continue;
+      const distance = editDistance(term, word);
+      if (distance <= 1 || (term.length > 6 && distance <= 2)) {
+        if (!best || distance < best.distance) best = { word, distance };
+      }
+    }
+    if (best && !suggestions.includes(best.word)) suggestions.push(best.word);
+  }
+  return suggestions.slice(0, 3);
+}
+
+/**
+ * Runs the full search: retrieval, BM25 ranking, an extractive summary and
+ * related questions. The whole feed snapshot is the candidate set, so a
+ * multi-word query is not narrowed by a substring filter before ranking.
+ */
 export async function runIntelligentSearch(query: string): Promise<SearchAnswer> {
   const terms = extractTerms(query);
   const trimmed = query.trim();
 
-  if (!terms.length) {
-    return { query: trimmed, summary: '', citations: [], relatedQuestions: [], results: [], matchedTerms: [] };
-  }
+  const empty: SearchAnswer = {
+    query: trimmed,
+    summary: '',
+    citations: [],
+    relatedQuestions: [],
+    results: [],
+    ranked: [],
+    matchedTerms: [],
+    unmatchedTerms: [],
+    suggestions: [],
+  };
 
-  // Retrieve on the full phrase first, then fall back to the longest term so a
-  // narrow query still returns something rather than nothing.
-  let results = await searchArticles(trimmed, 40);
-  if (!results.length) {
-    results = await searchArticles(terms.join(' '), 40);
-  }
-  if (!results.length) {
-    results = await searchArticles(terms.sort((a, b) => b.length - a.length)[0], 40);
-  }
+  if (!terms.length) return empty;
 
-  const { summary, citations } = buildExtractiveSummary(results, terms);
+  const corpus = await getAllArticles();
+  if (!corpus.length) return { ...empty, matchedTerms: terms };
+
+  const { ranked, documentFrequency } = rankBm25(corpus, terms, 40);
+  const results = ranked.map((entry) => entry.article);
+
+  const matchedTerms = terms.filter((term) => (documentFrequency.get(term) ?? 0) > 0);
+  const unmatchedTerms = terms.filter((term) => (documentFrequency.get(term) ?? 0) === 0);
+
+  // Vocabulary is every term seen in the corpus, used only to offer corrections.
+  const vocabulary = new Map<string, number>();
+  for (const article of corpus) {
+    for (const token of tokenize(`${article.title} ${article.summary}`)) {
+      vocabulary.set(token, (vocabulary.get(token) ?? 0) + 1);
+    }
+  }
+  const suggestions = suggestCorrections(unmatchedTerms, vocabulary);
+
+  const { summary, citations } = buildExtractiveSummary(results, matchedTerms);
 
   return {
     query: trimmed,
@@ -182,6 +345,9 @@ export async function runIntelligentSearch(query: string): Promise<SearchAnswer>
     citations,
     relatedQuestions: results.length ? buildRelatedQuestions(results, terms) : [],
     results,
-    matchedTerms: terms,
+    ranked,
+    matchedTerms,
+    unmatchedTerms,
+    suggestions,
   };
 }

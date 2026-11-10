@@ -45,6 +45,7 @@ const ROUTES = [
   { path: '/knowledge', public: true, priority: '0.7', changefreq: 'weekly' },
   { path: '/learning', public: true, priority: '0.7', changefreq: 'weekly' },
   { path: '/books', public: true, priority: '0.7', changefreq: 'weekly' },
+  { path: '/library', public: true, priority: '0.6', changefreq: 'weekly' },
   { path: '/study', public: true, priority: '0.7', changefreq: 'weekly' },
   { path: '/study/resources', public: true, priority: '0.6', changefreq: 'weekly' },
   { path: '/writing', public: true, priority: '0.7', changefreq: 'weekly' },

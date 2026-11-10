@@ -74,6 +74,19 @@ export const studyService = {
     });
   },
 
+  /** Every study resource for the admin editor. Admins only, via RLS. */
+  async listAllForAdmin(): Promise<Result<StudyResourceRow[]>> {
+    return run(async () => {
+      const { data, error } = await requireClient()
+        .from('study_resources')
+        .select('*')
+        .order('updated_at', { ascending: false })
+        .limit(500);
+      if (error) throw error;
+      return (data ?? []) as StudyResourceRow[];
+    });
+  },
+
   async create(values: Partial<StudyResourceRow>): Promise<Result<StudyResourceRow>> {
     return run(async () => {
       const { data, error } = await requireClient()

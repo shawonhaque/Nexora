@@ -16,23 +16,53 @@ export function ProtectedRoute({ children }: { children: ReactNode }) {
   const { loading, user, isAdmin, backendConfigured } = useAuth();
   const location = useLocation();
 
-  if (!backendConfigured) {
+  /**
+   * Every non-rendering state gets a real heading, so a screen reader landing
+   * on the dashboard always has an h1 to orient from even when there is no
+   * content to show.
+   */
+  function Gate({
+    title,
+    heading,
+    message,
+    tone,
+    action,
+  }: {
+    title: string;
+    heading: string;
+    message: string;
+    tone: 'warning' | 'error';
+    action: ReactNode;
+  }) {
     return (
       <div className="wrap py-20">
-        <PageMeta title="Dashboard" noIndex />
-        <StateBlock
-          tone="warning"
-          title="Backend not connected"
-          message="The dashboard needs a Supabase project. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY, then follow supabase/README.md to create the first admin account."
-          action={<ButtonLink to="/" variant="ghost">Back to site</ButtonLink>}
-        />
+        <PageMeta title={title} noIndex />
+        <h1 className="mb-6 text-2xl sm:text-3xl">Dashboard</h1>
+        <StateBlock tone={tone} title={heading} message={message} action={action} />
       </div>
+    );
+  }
+
+  if (!backendConfigured) {
+    return (
+      <Gate
+        title="Dashboard"
+        heading="Backend not connected"
+        message="The dashboard needs a Supabase project. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY, then follow supabase/README.md to create the first admin account."
+        tone="warning"
+        action={
+          <ButtonLink to="/" variant="ghost">
+            Back to site
+          </ButtonLink>
+        }
+      />
     );
   }
 
   if (loading) {
     return (
       <div className="wrap py-24" aria-busy="true" aria-live="polite">
+        <h1 className="sr-only">Dashboard</h1>
         <div className="mx-auto max-w-md space-y-4 text-center">
           <div className="mx-auto h-10 w-10 animate-pulse rounded-xl bg-elevated" />
           <p className="text-sm text-muted">Checking your session…</p>
@@ -47,15 +77,17 @@ export function ProtectedRoute({ children }: { children: ReactNode }) {
 
   if (!isAdmin) {
     return (
-      <div className="wrap py-20">
-        <PageMeta title="Access denied" noIndex />
-        <StateBlock
-          tone="error"
-          title="You do not have access to the dashboard"
-          message="Your account is signed in but does not have the admin role. If you believe this is wrong, the role must be granted in the database by the site owner."
-          action={<ButtonLink to="/" variant="ghost">Back to site</ButtonLink>}
-        />
-      </div>
+      <Gate
+        title="Access denied"
+        heading="You do not have access to the dashboard"
+        message="Your account is signed in but does not have the admin role. If you believe this is wrong, the role must be granted in the database by the site owner."
+        tone="error"
+        action={
+          <ButtonLink to="/" variant="ghost">
+            Back to site
+          </ButtonLink>
+        }
+      />
     );
   }
 

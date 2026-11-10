@@ -86,6 +86,19 @@ export const bookService = {
     });
   },
 
+  /** Every book for the admin editor. Admins only, via RLS. */
+  async listAllForAdmin(): Promise<Result<BookRow[]>> {
+    return run(async () => {
+      const { data, error } = await requireClient()
+        .from('books')
+        .select('*')
+        .order('updated_at', { ascending: false })
+        .limit(500);
+      if (error) throw error;
+      return (data ?? []) as BookRow[];
+    });
+  },
+
   async create(values: Partial<BookRow>): Promise<Result<BookRow>> {
     return run(async () => {
       const { data, error } = await requireClient().from('books').insert(values).select('*').single();

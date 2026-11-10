@@ -65,6 +65,19 @@ export const ideaService = {
     });
   },
 
+  /** Every idea for the admin editor, regardless of status. Admins only, via RLS. */
+  async listAllForAdmin(): Promise<Result<IdeaRow[]>> {
+    return run(async () => {
+      const { data, error } = await requireClient()
+        .from('ideas')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(500);
+      if (error) throw error;
+      return (data ?? []) as IdeaRow[];
+    });
+  },
+
   async create(values: Partial<IdeaRow>): Promise<Result<IdeaRow>> {
     return run(async () => {
       const { data, error } = await requireClient().from('ideas').insert(values).select('*').single();

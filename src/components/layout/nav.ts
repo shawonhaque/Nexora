@@ -40,6 +40,7 @@ export const NAV_GROUPS: NavGroup[] = [
   {
     title: 'My Library',
     items: [
+      { to: '/library', label: 'Library', icon: 'bookmark' },
       { to: '/saved', label: 'Saved Articles', icon: 'bookmark' },
       { to: '/history', label: 'Reading History', icon: 'clock' },
     ],
