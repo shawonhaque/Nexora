@@ -47,6 +47,7 @@ Run these in order, in the Supabase **SQL editor**, or with the Supabase CLI:
 | `migrations/0003_storage.sql` | The three storage buckets and their policies |
 | `migrations/0004_first_admin.sql` | Grants the admin role to one existing account |
 | `migrations/0005_personalization.sql` | Tables backing interests, saved articles, reading history and notifications |
+| `migrations/0006_profiles_insert_hardening.sql` | Closes the profile INSERT path so a non-admin cannot self-assign a role |
 
 With the CLI:
 
@@ -148,10 +149,12 @@ the only role that can read or write `diary_entries`. Every one of those rules i
 enforced by Postgres policies, not by the React router — the `ProtectedRoute`
 component is a convenience for the user, and bypassing it gains nothing because
 the database rejects the request anyway. Through the API, a role can only be
-changed by an administrator other than the account being changed, so
-self-promotion is impossible from the browser. A direct database session — the
-Supabase SQL editor, or a migration — is trusted and may change roles; that is
-the only way to grant the first admin, and it never involves a password.
+changed by an administrator other than the account being changed, and a
+non-admin can only insert their own profile row with the default `user` role
+(`0006`), so self-promotion is not reachable from the browser. A direct database
+session — the Supabase SQL editor, or a migration — is trusted and may change
+roles; that is the only way to grant the first admin, and it never involves a
+password.
 
 ## What is not implemented yet
 
