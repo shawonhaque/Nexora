@@ -107,31 +107,6 @@ export async function getLatestArticles(limit = 12): Promise<NewsArticle[]> {
   return snapshot.items.slice(0, limit);
 }
 
-/** Keyword search across the snapshot, ranked by where the term appears. */
-export async function searchArticles(query: string, limit = 30): Promise<NewsArticle[]> {
-  const snapshot = await loadSnapshot();
-  const terms = query.toLowerCase().split(/\s+/).filter((term) => term.length > 1);
-  if (!terms.length) return [];
-
-  const scored = snapshot.items
-    .map((item) => {
-      const title = item.title.toLowerCase();
-      const summary = item.summary.toLowerCase();
-      let score = 0;
-      for (const term of terms) {
-        if (title.includes(term)) score += 10;
-        if (summary.includes(term)) score += 3;
-        if (item.source.toLowerCase().includes(term)) score += 2;
-        if (item.category.includes(term)) score += 2;
-      }
-      return { item, score };
-    })
-    .filter((entry) => entry.score > 0)
-    .sort((a, b) => b.score - a.score || (b.item.publishedAt || '').localeCompare(a.item.publishedAt || ''));
-
-  return scored.slice(0, limit).map((entry) => entry.item);
-}
-
 /** Counts per category, for the dashboard cards. */
 export async function getCategoryCounts(): Promise<Record<NewsCategory, number>> {
   const snapshot = await loadSnapshot();

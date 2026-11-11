@@ -94,6 +94,57 @@ export const postService = {
     });
   },
 
+  /** Every row for one section, for the admin editor. Admins only, via RLS. */
+  async listAllForAdmin(section?: string): Promise<Result<PostRow[]>> {
+    return run(async () => {
+      let builder = requireClient()
+        .from('posts')
+        .select('*')
+        .order('updated_at', { ascending: false })
+        .limit(500);
+      if (section) builder = builder.eq('section', section);
+      const { data, error } = await builder;
+      if (error) throw error;
+      return (data ?? []) as PostRow[];
+    });
+  },
+
+  /**
+   * Publishes every draft whose scheduled time has passed.
+   *
+   * `published_at` is set to the scheduled time rather than to the moment this
+   * runs, so a post scheduled for the morning is dated to the morning even if
+   * the action is triggered later. The rows are read first and written one by
+   * one because PostgREST cannot copy one column into another in a single
+   * update.
+   */
+  async publishDue(): Promise<Result<number>> {
+    return run(async () => {
+      const nowIso = new Date().toISOString();
+      const { data: due, error: readError } = await requireClient()
+        .from('posts')
+        .select('id,scheduled_at')
+        .eq('status', 'draft')
+        .not('scheduled_at', 'is', null)
+        .lte('scheduled_at', nowIso);
+      if (readError) throw readError;
+
+      const rows = (due ?? []) as { id: string; scheduled_at: string | null }[];
+      for (const row of rows) {
+        const { error } = await requireClient()
+          .from('posts')
+          .update({
+            status: 'published',
+            published_at: row.scheduled_at ?? nowIso,
+            updated_at: nowIso,
+          })
+          .eq('id', row.id);
+        if (error) throw error;
+      }
+      return rows.length;
+    });
+  },
+
   async create(values: Partial<PostRow>): Promise<Result<PostRow>> {
     return run(async () => {
       const { data, error } = await requireClient().from('posts').insert(values).select('*').single();

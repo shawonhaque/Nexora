@@ -160,6 +160,28 @@ export default function Search() {
 
         {state === 'done' && answer && (
           <>
+            {answer.suggestions.length > 0 && (
+              <p className="flex flex-wrap items-center gap-2 text-sm text-muted">
+                <span>Did you mean</span>
+                {answer.suggestions.map((suggestion) => (
+                  <button
+                    key={suggestion}
+                    type="button"
+                    onClick={() => {
+                      const corrected = answer.matchedTerms.concat(suggestion).join(' ');
+                      setInput(corrected);
+                      setParams({ q: corrected });
+                      void execute(corrected);
+                    }}
+                    className="chip transition hover:border-accent/50 hover:text-accent"
+                  >
+                    {suggestion}
+                  </button>
+                ))}
+                <span>?</span>
+              </p>
+            )}
+
             {answer.summary ? (
               <section className="glass overflow-hidden" aria-labelledby="answer-heading">
                 <div className="flex items-center gap-2 border-b border-line/70 bg-accent/5 px-5 py-3">
@@ -241,6 +263,9 @@ export default function Search() {
                   <h2 id="results-heading" className="text-lg font-semibold">
                     Sources ({results.length})
                   </h2>
+                  <span className="font-mono text-[0.68rem] uppercase tracking-wider text-muted">
+                    ranked by BM25 relevance
+                  </span>
                   <div className="ml-auto flex flex-wrap gap-1.5">
                     <button
                       type="button"
@@ -266,11 +291,36 @@ export default function Search() {
                   </div>
                 </div>
 
+                {answer.unmatchedTerms.length > 0 && (
+                  <p className="mb-4 text-xs leading-relaxed text-muted">
+                    No article matched{' '}
+                    {answer.unmatchedTerms.map((term) => (
+                      <code key={term} className="mx-0.5 rounded bg-elevated px-1.5 py-0.5 font-mono text-accent2">
+                        {term}
+                      </code>
+                    ))}
+                    . Results below are ranked on the terms that did match.
+                  </p>
+                )}
+
                 {results.length ? (
                   <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-                    {results.map((article) => (
-                      <ArticleCard key={article.id} article={article} />
-                    ))}
+                    {results.map((article) => {
+                      const entry = answer.ranked.find((item) => item.article.id === article.id);
+                      return (
+                        <div key={article.id} className="relative">
+                          {entry && (
+                            <span
+                              className="absolute right-3 top-3 z-10 rounded-lg bg-black/70 px-2 py-1 font-mono text-[0.68rem] font-semibold text-white backdrop-blur"
+                              title={`BM25 relevance ${(entry.score * 100).toFixed(0)}% — matched: ${entry.matched.join(', ')}`}
+                            >
+                              {(entry.score * 100).toFixed(0)}%
+                            </span>
+                          )}
+                          <ArticleCard article={article} />
+                        </div>
+                      );
+                    })}
                   </div>
                 ) : (
                   <EmptyState

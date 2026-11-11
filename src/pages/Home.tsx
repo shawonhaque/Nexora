@@ -16,10 +16,13 @@ import {
   type OnThisDayEvent,
 } from '../services/newsService';
 import { relativeTime } from '../lib/format';
+import { recommendArticles } from '../lib/readingStats';
 import type { NewsArticle, NewsCategory, TrendItem } from '../lib/newsTypes';
 
 interface DashboardData {
   latest: NewsArticle[];
+  /** Every article in the snapshot, used as the candidate set for recommendations. */
+  corpus: NewsArticle[];
   counts: Record<NewsCategory, number>;
   trending: TrendItem[];
   onThisDay: OnThisDayEvent[];
@@ -51,6 +54,7 @@ export default function Home() {
     ]);
     return {
       latest: snapshot.items.slice(0, 9),
+      corpus: snapshot.items,
       counts,
       trending,
       onThisDay: onThisDay.slice(0, 4),
@@ -73,6 +77,22 @@ export default function Home() {
     const rest = data.latest.filter((article) => !interests.includes(article.category));
     return [...preferred, ...rest];
   }, [data, interests]);
+
+  /**
+   * Recommendations drawn from the reader's own saved articles, history and
+   * interests. Articles already read or saved are excluded, so this is always
+   * something new; each card carries the reason it was suggested.
+   */
+  const recommended = useMemo(() => {
+    if (!data) return [];
+    return recommendArticles({
+      corpus: data.corpus,
+      history,
+      saved,
+      interests,
+      limit: 6,
+    });
+  }, [data, history, saved, interests]);
 
   const totalArticles = data ? Object.values(data.counts).reduce((sum, value) => sum + value, 0) : 0;
 
@@ -185,6 +205,30 @@ export default function Home() {
                 <EmptyState title="No articles yet" message="The feed snapshot is empty. Try refreshing." />
               )}
             </section>
+
+            {/* Recommendations from the reader's own activity */}
+            {recommended.length > 0 && (
+              <section aria-labelledby="recommended-heading">
+                <SubHeading
+                  id="recommended-heading"
+                  title="Recommended for you"
+                  hint="Suggested from your saved articles, reading history and chosen interests. Articles you have already opened are left out."
+                  action={
+                    <Link to="/library" className="btn-ghost !py-2 text-xs">
+                      <Icon name="bookmark" className="h-4 w-4" /> Open library
+                    </Link>
+                  }
+                />
+                <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+                  {recommended.map((entry) => (
+                    <div key={entry.article.id} className="flex flex-col gap-2">
+                      <ArticleCard article={entry.article} />
+                      <p className="px-1 text-xs leading-relaxed text-muted">{entry.reason}</p>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
 
             {/* Trending, live from Hacker News */}
             <section aria-labelledby="trending-heading">

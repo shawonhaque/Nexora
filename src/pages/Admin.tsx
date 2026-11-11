@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { PageMeta } from '../components/layout/PageMeta';
+import { Icon, type IconName } from '../components/news/ArticleCard';
 import { useAuth } from '../context/AuthContext';
 import { useAsyncData } from '../hooks/useAsyncData';
 import { postService, bookService, studyService, categoryService } from '../services';
@@ -13,12 +14,23 @@ const ADMIN_SECTIONS = [
   { to: '/admin/books', label: 'Books' },
   { to: '/admin/study', label: 'Study' },
   { to: '/admin/knowledge', label: 'Knowledge' },
+  { to: '/admin/learning', label: 'Learning' },
   { to: '/admin/writing', label: 'Writing' },
   { to: '/admin/ideas', label: 'Ideas' },
   { to: '/admin/bookmarks', label: 'Bookmarks' },
   { to: '/admin/diary', label: 'Private Diary' },
   { to: '/admin/categories', label: 'Categories' },
   { to: '/admin/settings', label: 'Settings' },
+];
+
+/** Shortcuts into the editors, with a plain description of each. */
+const QUICK_ACTIONS: { to: string; label: string; hint: string; icon: IconName }[] = [
+  { to: '/admin/news', label: 'Write a news entry', hint: 'Publish a longer piece alongside the live feeds.', icon: 'globe' },
+  { to: '/admin/knowledge', label: 'Add knowledge', hint: 'Explain an idea and connect it to others.', icon: 'sparkle' },
+  { to: '/admin/books', label: 'Catalogue a book', hint: 'Add a book with cover, rating and reading link.', icon: 'book' },
+  { to: '/admin/study', label: 'Upload a study resource', hint: 'Notes, worksheets or guides for the study section.', icon: 'flask' },
+  { to: '/admin/settings', label: 'Publish scheduled drafts', hint: 'Release anything whose scheduled time has passed.', icon: 'clock' },
+  { to: '/admin/categories', label: 'Manage categories', hint: 'Group posts and books by section.', icon: 'filter' },
 ];
 
 interface StatCardProps {
@@ -178,6 +190,27 @@ export default function Admin() {
               <p className="mt-3 text-xs text-muted">
                 Counts of zero mean no matching records exist yet — nothing is estimated.
               </p>
+            </section>
+
+            <section aria-labelledby="admin-quick">
+              <h2 id="admin-quick" className="mb-3 text-base font-semibold text-heading">Quick actions</h2>
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {QUICK_ACTIONS.map((action) => (
+                  <Link
+                    key={action.to}
+                    to={action.to}
+                    className="glass glass-hover flex items-start gap-3 p-4"
+                  >
+                    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-accent/12 text-accent">
+                      <Icon name={action.icon} className="h-[18px] w-[18px]" />
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block text-sm font-semibold text-heading">{action.label}</span>
+                      <span className="mt-0.5 block text-xs leading-relaxed text-muted">{action.hint}</span>
+                    </span>
+                  </Link>
+                ))}
+              </div>
             </section>
 
             <ContentTable title="Recent content" />

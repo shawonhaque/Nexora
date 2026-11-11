@@ -15,6 +15,11 @@ NEXORA collects reporting from established publishers into a single, readable
 dashboard, ranks those articles against a question, and keeps a personal
 library. It is a multi-page React application, not a landing page.
 
+Signed-in readers get a library that unifies what they saved with what they have
+read, plus statistics computed from their own rows: totals, a reading streak, a
+fourteen-day activity chart and the sources they return to most. The home page
+suggests what to read next and states the reason for each suggestion.
+
 It is **not** a news organisation. It does not write, rewrite or editorialise.
 Every article links to the publisher's own page, and the source and publication
 time shown come from that publisher's feed.
@@ -41,7 +46,9 @@ Stated plainly, because the difference matters:
   data, reproduced as received.
 - Search summaries are **extractive**: the sentences shown already exist in the
   retrieved articles, and each carries a numbered citation to its source
-  (`src/services/intelligentSearch.ts`).
+  (`src/services/intelligentSearch.ts`). Ranking is BM25 with field weighting,
+  not substring position, and each result shows a normalised relevance score.
+  Terms that match nothing are reported, and near-miss terms get a suggestion.
 - Trending lists, model lists and historical events come from live APIs and link
   to the original.
 - No article, statistic or quotation is invented. There are no synthetic live
@@ -124,7 +131,8 @@ src/
   services/        Typed data access; every call returns a Result, never throws
   router.tsx       Route table with lazy-loaded pages
 supabase/
-  migrations/      0001 schema · 0002 RLS · 0003 storage · 0004 first admin · 0005 personalisation
+  migrations/      0001 schema · 0002 RLS · 0003 storage · 0004 first admin
+                   0005 personalisation · 0006 harden profiles INSERT
 ```
 
 ## Design decisions worth knowing
@@ -192,10 +200,12 @@ VITE_BASE=/new-repo-name/ npm run build
 
 Stated plainly so nothing reads as finished when it is not:
 
-- Content editors for the admin sections. The routes exist, are access
-  controlled, and say so on the page.
-- Scheduled publishing. The `scheduled_at` column exists; no job acts on it.
-- A generation backend for search answers (see above).
+- Automatic scheduled publishing. The `scheduled_at` column exists and the
+  dashboard has a **Publish due** action, but it is deliberate and manual: the
+  site is served as static files with no server-side scheduler, so nothing runs
+  on its own.
+- A generation backend for search answers (see above). Summaries are extracted,
+  not generated.
 - Analytics — none is implemented, so no traffic figures are shown anywhere.
 
 ## Licence

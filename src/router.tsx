@@ -12,6 +12,7 @@ import CategoryPage from './pages/CategoryPage';
 // Route-level code splitting keeps the first paint small; each page loads on demand.
 const Explore = lazy(() => import('./pages/Explore'));
 const Search = lazy(() => import('./pages/Search'));
+const Library = lazy(() => import('./pages/Library'));
 const Saved = lazy(() => import('./pages/Saved'));
 const History = lazy(() => import('./pages/History'));
 const Profile = lazy(() => import('./pages/Profile'));
@@ -73,6 +74,7 @@ export const router = createBrowserRouter(
         { path: 'business', element: withSuspense(<CategoryPage category="business" />) },
 
         // Personal library
+        { path: 'library', element: withSuspense(<Library />) },
         { path: 'saved', element: withSuspense(<Saved />) },
         { path: 'history', element: withSuspense(<History />) },
         { path: 'profile', element: withSuspense(<Profile />) },
