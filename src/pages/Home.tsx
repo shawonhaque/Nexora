@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { ArticleCard, ArticleSkeleton, EmptyState, ErrorState, Icon } from '../components/news/ArticleCard';
+import { EarthGlobe } from '../components/news/EarthGlobe';
 import { FreshnessBar, PageBody, PageHeader, StatCard, SubHeading } from '../components/ui/PageHeader';
 import { PageMeta } from '../components/layout/PageMeta';
 import { useLiveData } from '../hooks/useLiveData';
@@ -89,6 +90,24 @@ export default function Home() {
 
   const totalArticles = data ? Object.values(data.counts).reduce((sum, value) => sum + value, 0) : 0;
 
+  /**
+   * Articles per country, for the globe. Derived from the same snapshot the
+   * rest of the page renders, so the dots and the numbers cannot disagree.
+   */
+  const countryCounts = useMemo(() => {
+    if (!data) return {};
+    const counts: Record<string, number> = {};
+    for (const article of data.corpus) {
+      counts[article.country] = (counts[article.country] ?? 0) + 1;
+    }
+    return counts;
+  }, [data]);
+
+  const deskCount = useMemo(
+    () => Object.values(countryCounts).filter((count) => count > 0).length,
+    [countryCounts]
+  );
+
   return (
     <>
       <PageMeta
@@ -171,6 +190,52 @@ export default function Home() {
                   icon="clock"
                   tone="accent2"
                 />
+              </div>
+            </section>
+
+            {/* The world desk. A quiet band between the numbers and the
+                headlines: it exists to remind the reader that every story
+                below came from somewhere specific. */}
+            <section aria-labelledby="globe-heading" className="border-y border-line py-6">
+              <div className="grid items-center gap-6 lg:grid-cols-12">
+                <div className="lg:col-span-4">
+                  <p className="eyebrow">The world desk</p>
+                  <h2 id="globe-heading" className="mt-2 font-serif text-2xl text-heading">
+                    Every story has a dateline
+                  </h2>
+                  <p className="mt-3 text-sm leading-relaxed text-muted">
+                    {deskCount
+                      ? `${deskCount} countries are reporting into this edition right now. Each dot is a desk we follow; drag the globe to turn it.`
+                      : 'Loading the desks that are reporting into this edition.'}
+                  </p>
+                  <dl className="mt-5 grid grid-cols-2 gap-x-4 gap-y-3 border-t border-line pt-4">
+                    <div>
+                      <dt className="kicker">Countries</dt>
+                      <dd className="tabular mt-1 font-serif text-xl text-heading">{deskCount}</dd>
+                    </div>
+                    <div>
+                      <dt className="kicker">Desks</dt>
+                      <dd className="tabular mt-1 font-serif text-xl text-heading">{data.sourceCount}</dd>
+                    </div>
+                  </dl>
+                  <Link
+                    to="/world"
+                    className="mt-5 inline-flex items-center gap-1.5 font-mono text-[0.66rem] uppercase tracking-[0.14em] text-accent hover:underline hover:underline-offset-4"
+                  >
+                    Open the world desk <Icon name="arrow-right" className="h-3 w-3" />
+                  </Link>
+                </div>
+                <div className="lg:col-span-8">
+                  <figure className="mx-auto w-full max-w-[520px]">
+                    <div className="aspect-[4/3] w-full border border-line">
+                      <EarthGlobe counts={countryCounts} focus={{ lat: 18, lon: 80 }} />
+                    </div>
+                    <figcaption className="mt-2.5 flex items-baseline justify-between gap-4 font-mono text-[0.6rem] uppercase tracking-[0.12em] text-muted">
+                      <span>Earth · Blue Marble composite</span>
+                      <span className="text-right">Imagery: NASA</span>
+                    </figcaption>
+                  </figure>
+                </div>
               </div>
             </section>
 

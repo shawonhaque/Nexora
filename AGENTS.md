@@ -102,6 +102,29 @@ The UI is set as an editorial paper, not a dashboard. Keep it that way.
   Its 1000-unit viewBox scales text down with the box, so the map has a
   640px floor width and scrolls sideways on phones — without it the labels
   render at 6px.
+- **The Earth is a printed plate, not a widget.** `EarthGlobe` renders a real
+  WebGL sphere (three.js, dynamically imported so its ~670KB chunk never lands
+  in the main bundle) and sits on its own dark plate — `bg-[#1a1816]`, the dark
+  theme's own `--c-bg` — framed by a hairline and a mono caption in both
+  themes. Do not try to blend it into the cream page: a photoreal Earth is a
+  dark object, and tinting it light turns it into a smudge. Framed as an inset
+  photograph it reads as editorial.
+- **The globe's orientation is a quaternion, and its signs are load-bearing.**
+  `SphereGeometry` builds vertices with `phi = lon + 180`, `theta = 90 - lat`,
+  and composes X/Y Euler angles in an order that silently points the globe at
+  the wrong meridian while still looking plausible. `EarthGlobe` therefore
+  builds `Rx(lat) · Ry(-(lon + 90))` as one matrix and converts it to a
+  quaternion. Pins use the same vertex formula as the sphere so they sit on
+  the coastline drawn beneath them. If you change either, verify by raycasting
+  the centre of the frame and reading back the texture coordinate — it must
+  come out as the `focus` point.
+- **Shading is hand-written, not `MeshPhongMaterial`.** Phong multiplies the
+  map by a cosine falloff and NASA's ocean is already near-black, so most of
+  the disc collapsed into the plate. The custom shader keeps an explicit light
+  floor (the unlit side retains 58% of its colour) and grades in display space.
+  That is also why the day/night textures load *without* `SRGBColorSpace` —
+  the shader writes straight to the framebuffer with no encoding step to undo
+  a linearised texture. Do not "fix" that by setting the colour space.
 - **`--c-on-accent` exists for a reason.** Terracotta is dark in light mode but
   lifted in dark mode, so white-on-accent only passes AA in light mode. Buttons
   use `text-onaccent`, which flips per theme.
