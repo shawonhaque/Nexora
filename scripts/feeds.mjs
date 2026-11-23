@@ -149,6 +149,111 @@ const FEEDS = [
   { id: 'global-guardian-business', name: 'The Guardian', home: 'https://www.theguardian.com/uk/business', category: 'business', continent: 'europe', country: 'United Kingdom', url: 'https://www.theguardian.com/uk/business/rss' },
   { id: 'global-who', name: 'World Health Organization', home: 'https://www.who.int', category: 'health', continent: 'europe', country: 'Switzerland', covers: ['World'], url: 'https://www.who.int/rss-feeds/news-english.xml' },
   { id: 'global-cricinfo', name: 'ESPNcricinfo', home: 'https://www.espncricinfo.com', category: 'sports', continent: 'oceania', country: 'Australia', covers: ['Australia', 'Bangladesh', 'India', 'Pakistan', 'United Kingdom', 'World'], url: 'https://www.espncricinfo.com/rss/content/story/feeds/0.xml' },
+
+  // ===================================================== COUNTRY DESKS
+  // One publisher per country, so every nation with a reachable feed has a
+  // desk of its own. Each URL was fetched and parsed when it was added; a
+  // feed that later stops answering is reported and skipped like any other.
+  // Countries still absent are ones whose outlets publish no public feed
+  // we can read, and the UI says so rather than inventing coverage.
+
+  // ---- More of Asia ----------------------------------------
+  { id: 'kr-yonhap', name: 'Yonhap', home: 'https://en.yna.co.kr', category: 'world', continent: 'asia', country: 'South Korea', url: 'https://en.yna.co.kr/RSS/news.xml' },
+  { id: 'kr-koreaherald', name: 'The Korea Herald', home: 'https://www.koreaherald.com', category: 'world', continent: 'asia', country: 'South Korea', url: 'https://www.koreaherald.com/rss/newsAll' },
+  { id: 'id-antara', name: 'ANTARA', home: 'https://en.antaranews.com', category: 'world', continent: 'asia', country: 'Indonesia', url: 'https://en.antaranews.com/rss/news.xml' },
+  { id: 'th-bangkokpost', name: 'Bangkok Post', home: 'https://www.bangkokpost.com', category: 'world', continent: 'asia', country: 'Thailand', url: 'https://www.bangkokpost.com/rss/data/topstories.xml' },
+  { id: 'vn-vnexpress', name: 'VnExpress International', home: 'https://e.vnexpress.net', category: 'world', continent: 'asia', country: 'Vietnam', url: 'https://e.vnexpress.net/rss/news.rss' },
+  { id: 'ph-inquirer', name: 'Philippine Daily Inquirer', home: 'https://www.inquirer.net', category: 'world', continent: 'asia', country: 'Philippines', url: 'https://www.inquirer.net/fullfeed' },
+  { id: 'ph-rappler', name: 'Rappler', home: 'https://www.rappler.com', category: 'world', continent: 'asia', country: 'Philippines', url: 'https://www.rappler.com/feed/' },
+  { id: 'my-freemalaysiatoday', name: 'Free Malaysia Today', home: 'https://www.freemalaysiatoday.com', category: 'world', continent: 'asia', country: 'Malaysia', url: 'https://www.freemalaysiatoday.com/feed/' },
+  { id: 'sg-straitstimes', name: 'The Straits Times', home: 'https://www.straitstimes.com', category: 'world', continent: 'asia', country: 'Singapore', url: 'https://www.straitstimes.com/news/world/rss.xml' },
+  { id: 'sg-cnainsider', name: 'CNA', home: 'https://www.channelnewsasia.com', category: 'world', continent: 'asia', country: 'Singapore', url: 'https://www.channelnewsasia.com/api/v1/rss-outbound-feed?_format=xml' },
+  { id: 'np-kathmandupost', name: 'The Kathmandu Post', home: 'https://kathmandupost.com', category: 'world', continent: 'asia', country: 'Nepal', url: 'https://kathmandupost.com/rss' },
+  { id: 'mm-irrawaddy', name: 'The Irrawaddy', home: 'https://www.irrawaddy.com', category: 'world', continent: 'asia', country: 'Myanmar', url: 'https://www.irrawaddy.com/feed' },
+  { id: 'mm-mmtimes', name: 'Myanmar Now', home: 'https://myanmar-now.org', category: 'world', continent: 'asia', country: 'Myanmar', url: 'https://myanmar-now.org/en/feed/' },
+  { id: 'kz-astanatimes', name: 'The Astana Times', home: 'https://astanatimes.com', category: 'world', continent: 'asia', country: 'Kazakhstan', url: 'https://astanatimes.com/feed/' },
+  { id: 'uz-uza', name: 'UzA', home: 'https://uza.uz', category: 'world', continent: 'asia', country: 'Uzbekistan', url: 'https://uza.uz/en/rss' },
+  { id: 'il-jpost', name: 'The Jerusalem Post', home: 'https://www.jpost.com', category: 'world', continent: 'asia', country: 'Israel', url: 'https://www.jpost.com/rss/rssfeedsfrontpage.aspx' },
+  { id: 'jo-roya', name: 'Roya News', home: 'https://en.royanews.tv', category: 'world', continent: 'asia', country: 'Jordan', url: 'https://en.royanews.tv/rss' },
+  { id: 'sa-arabnews', name: 'Arab News', home: 'https://www.arabnews.com', category: 'world', continent: 'asia', country: 'Saudi Arabia', url: 'https://www.arabnews.com/rss.xml' },
+  { id: 'tw-taipeitimes', name: 'Taipei Times', home: 'https://www.taipeitimes.com', category: 'world', continent: 'asia', country: 'Taiwan', url: 'https://www.taipeitimes.com/xml/index.rss' },
+  { id: 'ge-civil', name: 'Civil.ge', home: 'https://civil.ge', category: 'world', continent: 'asia', country: 'Georgia', url: 'https://civil.ge/feed/' },
+  { id: 'bt-thebhutanese', name: 'The Bhutanese', home: 'https://thebhutanese.bt', category: 'world', continent: 'asia', country: 'Bhutan', url: 'https://thebhutanese.bt/feed/' },
+  { id: 'mn-montsame2', name: 'Montsame', home: 'https://montsame.mn', category: 'world', continent: 'asia', country: 'Mongolia', url: 'https://montsame.mn/en/rss.xml' },
+
+  // ---- More of Europe --------------------------------------
+  { id: 'es-elpais', name: 'El País', home: 'https://english.elpais.com', category: 'world', continent: 'europe', country: 'Spain', url: 'https://feeds.elpais.com/mrss-s/pages/ep/site/english.elpais.com/portada' },
+  { id: 'nl-dutchnews', name: 'DutchNews', home: 'https://www.dutchnews.nl', category: 'world', continent: 'europe', country: 'Netherlands', url: 'https://www.dutchnews.nl/feed/' },
+  { id: 'se-thelocal', name: 'The Local Sweden', home: 'https://www.thelocal.se', category: 'world', continent: 'europe', country: 'Sweden', url: 'https://www.thelocal.se/feeds/rss.php' },
+  { id: 'at-thelocal', name: 'The Local Austria', home: 'https://www.thelocal.at', category: 'world', continent: 'europe', country: 'Austria', url: 'https://www.thelocal.at/feeds/rss.php' },
+  { id: 'dk-cphpost', name: 'The Copenhagen Post', home: 'https://cphpost.dk', category: 'world', continent: 'europe', country: 'Denmark', url: 'https://cphpost.dk/feed/' },
+  { id: 'ee-err', name: 'ERR News', home: 'https://news.err.ee', category: 'world', continent: 'europe', country: 'Estonia', url: 'https://news.err.ee/rss' },
+  { id: 'lv-lsm', name: 'LSM', home: 'https://eng.lsm.lv', category: 'world', continent: 'europe', country: 'Latvia', url: 'https://eng.lsm.lv/rss/' },
+  { id: 'ie-irishtimes', name: 'The Irish Times', home: 'https://www.irishtimes.com', category: 'world', continent: 'europe', country: 'Ireland', url: 'https://www.irishtimes.com/arc/outboundfeeds/rss/' },
+  { id: 'ie-rte', name: 'RTÉ', home: 'https://www.rte.ie', category: 'world', continent: 'europe', country: 'Ireland', url: 'https://www.rte.ie/feeds/rss/?index=/news/' },
+  { id: 'pt-portugalnews', name: 'Portugal News', home: 'https://www.theportugalnews.com', category: 'world', continent: 'europe', country: 'Portugal', url: 'https://www.theportugalnews.com/rss' },
+  { id: 'ro-romania-insider', name: 'Romania Insider', home: 'https://www.romania-insider.com', category: 'world', continent: 'europe', country: 'Romania', url: 'https://www.romania-insider.com/feed' },
+  { id: 'bg-sofia', name: 'The Sofia Globe', home: 'https://sofiaglobe.com', category: 'world', continent: 'europe', country: 'Bulgaria', url: 'https://sofiaglobe.com/feed/' },
+  { id: 'hr-croatiaweek', name: 'Croatia Week', home: 'https://www.croatiaweek.com', category: 'world', continent: 'europe', country: 'Croatia', url: 'https://www.croatiaweek.com/feed/' },
+  { id: 'ua-kyivpost', name: 'Kyiv Post', home: 'https://www.kyivpost.com', category: 'world', continent: 'europe', country: 'Ukraine', url: 'https://www.kyivpost.com/feed' },
+  { id: 'cy-cyprusmail', name: 'Cyprus Mail', home: 'https://cyprus-mail.com', category: 'world', continent: 'europe', country: 'Cyprus', url: 'https://cyprus-mail.com/feed/' },
+  { id: 'lu-luxtimes', name: 'Luxembourg Times', home: 'https://www.luxtimes.lu', category: 'world', continent: 'europe', country: 'Luxembourg', url: 'https://www.luxtimes.lu/rss' },
+  { id: 'mt-timesofmalta', name: 'Times of Malta', home: 'https://timesofmalta.com', category: 'world', continent: 'europe', country: 'Malta', url: 'https://timesofmalta.com/rss' },
+  { id: 'hu-hungarytoday', name: 'Hungary Today', home: 'https://hungarytoday.hu', category: 'world', continent: 'europe', country: 'Hungary', url: 'https://hungarytoday.hu/feed/' },
+  { id: 'al-tiranatimes', name: 'Tirana Times', home: 'https://www.tiranatimes.com', category: 'world', continent: 'europe', country: 'Albania', url: 'https://www.tiranatimes.com/feed/' },
+  { id: 'fi-yle2', name: 'Yle News', home: 'https://yle.fi', category: 'world', continent: 'europe', country: 'Finland', url: 'https://feeds.yle.fi/uutiset/v1/recent.rss?publisherIds=YLE_NEWS' },
+  { id: 'is-iceland2', name: 'Iceland Review', home: 'https://www.icelandreview.com', category: 'world', continent: 'europe', country: 'Iceland', url: 'https://www.icelandreview.com/feed/' },
+  { id: 'pl-poland2', name: 'Notes from Poland', home: 'https://notesfrompoland.com', category: 'world', continent: 'europe', country: 'Poland', url: 'https://notesfrompoland.com/feed/' },
+  { id: 'rs-b92b', name: 'N1 Serbia', home: 'https://n1info.rs', category: 'world', continent: 'europe', country: 'Serbia', url: 'https://n1info.rs/feed/' },
+  { id: 'cz-prague2', name: 'Prague Morning', home: 'https://praguemorning.cz', category: 'world', continent: 'europe', country: 'Czechia', url: 'https://praguemorning.cz/feed/' },
+  { id: 'md-moldova2', name: 'Moldova.org', home: 'https://www.moldova.org', category: 'world', continent: 'europe', country: 'Moldova', url: 'https://www.moldova.org/feed/' },
+
+  // ---- More of Africa --------------------------------------
+  { id: 'ma-northafricapost', name: 'The North Africa Post', home: 'https://northafricapost.com', category: 'world', continent: 'africa', country: 'Morocco', url: 'https://northafricapost.com/feed/' },
+  { id: 'tn-businessnews', name: 'African Manager', home: 'https://africanmanager.com', category: 'world', continent: 'africa', country: 'Tunisia', url: 'https://africanmanager.com/feed/' },
+  { id: 'et-ethiopianmonitor', name: 'The Ethiopian Monitor', home: 'https://ethiopianmonitor.com', category: 'world', continent: 'africa', country: 'Ethiopia', url: 'https://ethiopianmonitor.com/feed/' },
+  { id: 'zm-lusakatimes', name: 'Lusaka Times', home: 'https://www.lusakatimes.com', category: 'world', continent: 'africa', country: 'Zambia', url: 'https://www.lusakatimes.com/feed/' },
+  { id: 'zw-newsday', name: 'NewsDay Zimbabwe', home: 'https://www.newsday.co.zw', category: 'world', continent: 'africa', country: 'Zimbabwe', url: 'https://www.newsday.co.zw/feed/' },
+  { id: 'mw-nation', name: 'The Nation Malawi', home: 'https://mwnation.com', category: 'world', continent: 'africa', country: 'Malawi', url: 'https://mwnation.com/feed/' },
+  { id: 'mu-defimedia', name: 'Defi Media', home: 'https://defimedia.info', category: 'world', continent: 'africa', country: 'Mauritius', url: 'https://defimedia.info/rss.xml' },
+  { id: 'mg-midi', name: 'Midi Madagasikara', home: 'https://midi-madagasikara.mg', category: 'world', continent: 'africa', country: 'Madagascar', url: 'https://midi-madagasikara.mg/feed/' },
+  { id: 'cd-actualite', name: 'Actualite.cd', home: 'https://actualite.cd', category: 'world', continent: 'africa', country: 'DR Congo', url: 'https://actualite.cd/feed' },
+  { id: 'cm-actucameroun', name: 'Actu Cameroun', home: 'https://actucameroun.com', category: 'world', continent: 'africa', country: 'Cameroon', url: 'https://actucameroun.com/feed/' },
+  { id: 'sn-senegal7', name: 'Senegal7', home: 'https://senegal7.com', category: 'world', continent: 'africa', country: 'Senegal', url: 'https://senegal7.com/feed/' },
+  { id: 'ml-afribone', name: 'Afribone', home: 'https://www.afribone.com', category: 'world', continent: 'africa', country: 'Mali', url: 'https://www.afribone.com/feed/' },
+  { id: 'ne-lesahel', name: 'Le Sahel', home: 'https://www.lesahel.org', category: 'world', continent: 'africa', country: 'Niger', url: 'https://www.lesahel.org/feed/' },
+  { id: 'td-tchadinfos', name: 'Tchad Infos', home: 'https://tchadinfos.com', category: 'world', continent: 'africa', country: 'Chad', url: 'https://tchadinfos.com/feed/' },
+  { id: 'bf-lefaso', name: 'Lefaso.net', home: 'https://lefaso.net', category: 'world', continent: 'africa', country: 'Burkina Faso', url: 'https://lefaso.net/spip.php?page=backend' },
+  { id: 'bj-beninweb', name: 'Benin Web TV', home: 'https://beninwebtv.com', category: 'world', continent: 'africa', country: 'Benin', url: 'https://beninwebtv.com/feed/' },
+  { id: 'gn-africaguinee', name: 'Africa Guinee', home: 'https://www.africaguinee.com', category: 'world', continent: 'africa', country: 'Guinea', url: 'https://www.africaguinee.com/feed/' },
+  { id: 'lr-frontpageafrica', name: 'FrontPage Africa', home: 'https://frontpageafricaonline.com', category: 'world', continent: 'africa', country: 'Liberia', url: 'https://frontpageafricaonline.com/feed/' },
+  { id: 'sr-dewarenog', name: 'De Ware Tijd', home: 'https://dwtonline.com', category: 'world', continent: 'south-america', country: 'Suriname', url: 'https://dwtonline.com/feed/' },
+  { id: 'na-namibian2', name: 'The Namibian', home: 'https://www.namibian.com.na', category: 'world', continent: 'africa', country: 'Namibia', url: 'https://www.namibian.com.na/feed/' },
+
+  // ---- More of North America -------------------------------
+  { id: 'us-cbs', name: 'CBS News', home: 'https://www.cbsnews.com', category: 'world', continent: 'north-america', country: 'United States', url: 'https://www.cbsnews.com/latest/rss/main' },
+  { id: 'us-latimes', name: 'Los Angeles Times', home: 'https://www.latimes.com', category: 'world', continent: 'north-america', country: 'United States', url: 'https://www.latimes.com/local/rss2.0.xml' },
+  { id: 'gt-prensalibre', name: 'Prensa Libre', home: 'https://www.prensalibre.com', category: 'world', continent: 'north-america', country: 'Guatemala', url: 'https://www.prensalibre.com/feed/' },
+  { id: 'cr-ticotimes', name: 'The Tico Times', home: 'https://ticotimes.net', category: 'world', continent: 'north-america', country: 'Costa Rica', url: 'https://ticotimes.net/feed' },
+  { id: 'cu-14ymedio', name: '14ymedio', home: 'https://www.14ymedio.com', category: 'world', continent: 'north-america', country: 'Cuba', url: 'https://www.14ymedio.com/rss' },
+  { id: 'jm-jamaicaobserver', name: 'Jamaica Observer', home: 'https://www.jamaicaobserver.com', category: 'world', continent: 'north-america', country: 'Jamaica', url: 'https://www.jamaicaobserver.com/feed/' },
+  { id: 'ht-haitiantimes', name: 'The Haitian Times', home: 'https://haitiantimes.com', category: 'world', continent: 'north-america', country: 'Haiti', url: 'https://haitiantimes.com/feed/' },
+  { id: 'hn-proceso', name: 'Proceso Digital', home: 'https://proceso.hn', category: 'world', continent: 'north-america', country: 'Honduras', url: 'https://proceso.hn/feed/' },
+  { id: 'ni-confidencial', name: 'Confidencial', home: 'https://confidencial.digital', category: 'world', continent: 'north-america', country: 'Nicaragua', url: 'https://confidencial.digital/feed/' },
+  { id: 'do-elnacional', name: 'El Nacional', home: 'https://elnacional.com.do', category: 'world', continent: 'north-america', country: 'Dominican Republic', url: 'https://elnacional.com.do/feed/' },
+
+  // ---- More of South America -------------------------------
+  { id: 've-elnacional', name: 'El Nacional', home: 'https://www.elnacional.com', category: 'world', continent: 'south-america', country: 'Venezuela', url: 'https://www.elnacional.com/feed/' },
+  { id: 'ec-ecuadortimes', name: 'Ecuador Times', home: 'https://www.ecuadortimes.net', category: 'world', continent: 'south-america', country: 'Ecuador', url: 'https://www.ecuadortimes.net/feed/' },
+  { id: 'uy-elpais', name: 'El País Uruguay', home: 'https://www.elpais.com.uy', category: 'world', continent: 'south-america', country: 'Uruguay', url: 'https://www.elpais.com.uy/rss' },
+  { id: 'gy-kaieteur', name: 'Kaieteur News', home: 'https://www.kaieteurnewsonline.com', category: 'world', continent: 'south-america', country: 'Guyana', url: 'https://www.kaieteurnewsonline.com/feed/' },
+  { id: 'bo-eldeber2', name: 'El Deber', home: 'https://eldeber.com.bo', category: 'world', continent: 'south-america', country: 'Bolivia', url: 'https://eldeber.com.bo/feed/' },
+
+  // ---- More of Oceania -------------------------------------
+  { id: 'fj-fbc', name: 'FBC News', home: 'https://www.fbcnews.com.fj', category: 'world', continent: 'oceania', country: 'Fiji', url: 'https://www.fbcnews.com.fj/feed/' },
+  { id: 'pg-postcourier', name: 'Post-Courier', home: 'https://www.postcourier.com.pg', category: 'world', continent: 'oceania', country: 'Papua New Guinea', url: 'https://www.postcourier.com.pg/feed/' },
+  { id: 'to-matangitonga', name: 'Matangi Tonga', home: 'https://matangitonga.to', category: 'world', continent: 'oceania', country: 'Tonga', url: 'https://matangitonga.to/rss.xml' },
+  { id: 'nc-rnz', name: 'RNZ Pacific', home: 'https://www.rnz.co.nz', category: 'world', continent: 'oceania', country: 'New Zealand', url: 'https://www.rnz.co.nz/rss/pacific.xml' },
 ];
 
 // ---------------------------------------------------------------- utilities
