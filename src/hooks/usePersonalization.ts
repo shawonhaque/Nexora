@@ -14,8 +14,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { isSupabaseConfigured } from '../lib/env';
 import { supabase } from '../lib/supabase';
+import type { NewsCategory } from '../lib/newsTypes';
 
-export type InterestCategory = 'world' | 'technology' | 'ai' | 'science' | 'education' | 'business';
+/** Followable topics. Every value matches a live feed category. */
+export type InterestCategory = NewsCategory;
 
 export interface SavedArticle {
   id: string;

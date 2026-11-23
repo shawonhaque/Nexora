@@ -20,6 +20,9 @@ import { dirname, join } from 'node:path';
 const OUT = join(process.cwd(), 'public', 'data', 'feeds.json');
 const TIMEOUT_MS = 20000;
 const MAX_ITEMS_PER_FEED = 20;
+/** Anything older than this is dropped: publishers keep archives in their feeds. */
+const MAX_AGE_DAYS = 14;
+const MAX_AGE_MS = MAX_AGE_DAYS * 24 * 60 * 60 * 1000;
 const USER_AGENT = 'NexoraBot/1.0 (+https://github.com/shawonhaque/Nexora)';
 
 /**
@@ -27,41 +30,125 @@ const USER_AGENT = 'NexoraBot/1.0 (+https://github.com/shawonhaque/Nexora)';
  * publisher's homepage, shown as attribution.
  */
 const FEEDS = [
-  // ---- World news -------------------------------------------------------
-  { id: 'bbc-world', name: 'BBC News', home: 'https://www.bbc.com/news', category: 'world', url: 'https://feeds.bbci.co.uk/news/world/rss.xml' },
-  { id: 'npr-news', name: 'NPR', home: 'https://www.npr.org', category: 'world', url: 'https://feeds.npr.org/1001/rss.xml' },
-  { id: 'aljazeera', name: 'Al Jazeera', home: 'https://www.aljazeera.com', category: 'world', url: 'https://www.aljazeera.com/xml/rss/all.xml' },
-  { id: 'guardian-world', name: 'The Guardian', home: 'https://www.theguardian.com/world', category: 'world', url: 'https://www.theguardian.com/world/rss' },
+  // ===================================================== ASIA
+  // ---- Bangladesh (also powers the Bangladesh Special section) ----------
+  { id: 'bd-dailystar', name: 'The Daily Star', home: 'https://www.thedailystar.net', category: 'breaking', continent: 'asia', country: 'Bangladesh', desk: 'national', url: 'https://www.thedailystar.net/frontpage/rss.xml' },
+  { id: 'bd-dailystar-sport', name: 'The Daily Star', home: 'https://www.thedailystar.net/sports', category: 'sports', continent: 'asia', country: 'Bangladesh', desk: 'sports', url: 'https://www.thedailystar.net/sports/rss.xml' },
+  { id: 'bd-dailystar-biz', name: 'The Daily Star', home: 'https://www.thedailystar.net/business', category: 'business', continent: 'asia', country: 'Bangladesh', desk: 'economy', url: 'https://www.thedailystar.net/business/rss.xml' },
+  { id: 'bd-dailystar-tech', name: 'The Daily Star', home: 'https://www.thedailystar.net/tech-startup', category: 'technology', continent: 'asia', country: 'Bangladesh', desk: 'tech', url: 'https://www.thedailystar.net/tech-startup/rss.xml' },
+  { id: 'bd-prothomalo', name: 'Prothom Alo', home: 'https://www.prothomalo.com', category: 'breaking', continent: 'asia', country: 'Bangladesh', desk: 'national', url: 'https://www.prothomalo.com/feed' },
+  { id: 'bd-bdnews24', name: 'bdnews24', home: 'https://bdnews24.com', category: 'breaking', continent: 'asia', country: 'Bangladesh', desk: 'dhaka', url: 'https://bdnews24.com/?widgetName=rssfeed&widgetId=1150&getXmlFeed=true' },
 
-  // ---- Technology -------------------------------------------------------
-  { id: 'bbc-tech', name: 'BBC News', home: 'https://www.bbc.com/news/technology', category: 'technology', url: 'https://feeds.bbci.co.uk/news/technology/rss.xml' },
-  { id: 'ars-technica', name: 'Ars Technica', home: 'https://arstechnica.com', category: 'technology', url: 'https://feeds.arstechnica.com/arstechnica/index' },
-  { id: 'techcrunch', name: 'TechCrunch', home: 'https://techcrunch.com', category: 'technology', url: 'https://techcrunch.com/feed/' },
-  { id: 'guardian-tech', name: 'The Guardian', home: 'https://www.theguardian.com/uk/technology', category: 'technology', url: 'https://www.theguardian.com/uk/technology/rss' },
-  { id: 'npr-tech', name: 'NPR', home: 'https://www.npr.org/sections/technology/', category: 'technology', url: 'https://feeds.npr.org/1019/rss.xml' },
+  // ---- India ------------------------------------------------------------
+  { id: 'in-toi', name: 'Times of India', home: 'https://timesofindia.indiatimes.com', category: 'world', continent: 'asia', country: 'India', url: 'https://timesofindia.indiatimes.com/rssfeedstopstories.cms' },
+  { id: 'in-hindu', name: 'The Hindu', home: 'https://www.thehindu.com', category: 'world', continent: 'asia', country: 'India', url: 'https://www.thehindu.com/news/feeder/default.rss' },
+  { id: 'in-ndtv', name: 'NDTV', home: 'https://www.ndtv.com', category: 'breaking', continent: 'asia', country: 'India', url: 'https://feeds.feedburner.com/ndtvnews-top-stories' },
 
-  // ---- Artificial intelligence -----------------------------------------
-  { id: 'mit-tech-review', name: 'MIT Technology Review', home: 'https://www.technologyreview.com', category: 'ai', url: 'https://www.technologyreview.com/feed/' },
-  { id: 'marktechpost', name: 'MarkTechPost', home: 'https://www.marktechpost.com', category: 'ai', url: 'https://www.marktechpost.com/feed/' },
-  { id: 'venturebeat-ai', name: 'VentureBeat', home: 'https://venturebeat.com/category/ai/', category: 'ai', url: 'https://venturebeat.com/category/ai/feed/' },
+  // ---- Pakistan ---------------------------------------------------------
+  { id: 'pk-dawn', name: 'Dawn', home: 'https://www.dawn.com', category: 'world', continent: 'asia', country: 'Pakistan', url: 'https://www.dawn.com/feeds/home' },
+  { id: 'pk-tribune', name: 'The Express Tribune', home: 'https://tribune.com.pk', category: 'world', continent: 'asia', country: 'Pakistan', url: 'https://tribune.com.pk/feed/home' },
+  { id: 'pk-thenews', name: 'The News International', home: 'https://www.thenews.com.pk', category: 'world', continent: 'asia', country: 'Pakistan', url: 'https://www.thenews.com.pk/rss/1/1' },
 
-  // ---- Science ----------------------------------------------------------
-  { id: 'bbc-science', name: 'BBC News', home: 'https://www.bbc.com/news/science_and_environment', category: 'science', url: 'https://feeds.bbci.co.uk/news/science_and_environment/rss.xml' },
-  { id: 'nature', name: 'Nature', home: 'https://www.nature.com', category: 'science', url: 'https://www.nature.com/nature.rss' },
-  { id: 'sciencedaily', name: 'ScienceDaily', home: 'https://www.sciencedaily.com', category: 'science', url: 'https://www.sciencedaily.com/rss/top/science.xml' },
-  { id: 'guardian-science', name: 'The Guardian', home: 'https://www.theguardian.com/science', category: 'science', url: 'https://www.theguardian.com/science/rss' },
-  { id: 'npr-science', name: 'NPR', home: 'https://www.npr.org/sections/science/', category: 'science', url: 'https://feeds.npr.org/1007/rss.xml' },
+  // ---- China ------------------------------------------------------------
+  { id: 'cn-scmp', name: 'South China Morning Post', home: 'https://www.scmp.com', category: 'world', continent: 'asia', country: 'China', url: 'https://www.scmp.com/rss/91/feed' },
 
-  // ---- Education --------------------------------------------------------
-  { id: 'bbc-education', name: 'BBC News', home: 'https://www.bbc.com/news/education', category: 'education', url: 'https://feeds.bbci.co.uk/news/education/rss.xml' },
-  { id: 'guardian-education', name: 'The Guardian', home: 'https://www.theguardian.com/education', category: 'education', url: 'https://www.theguardian.com/education/rss' },
-  { id: 'npr-education', name: 'NPR', home: 'https://www.npr.org/sections/education/', category: 'education', url: 'https://feeds.npr.org/1013/rss.xml' },
-  { id: 'inside-higher-ed', name: 'Inside Higher Ed', home: 'https://www.insidehighered.com', category: 'education', url: 'https://www.insidehighered.com/rss.xml' },
+  // ---- Japan ------------------------------------------------------------
+  { id: 'jp-japantimes', name: 'The Japan Times', home: 'https://www.japantimes.co.jp', category: 'world', continent: 'asia', country: 'Japan', url: 'https://www.japantimes.co.jp/feed/' },
+  { id: 'jp-nhk', name: 'NHK', home: 'https://www3.nhk.or.jp', category: 'breaking', continent: 'asia', country: 'Japan', url: 'https://www3.nhk.or.jp/rss/news/cat0.xml' },
+  { id: 'jp-mainichi', name: 'Mainichi', home: 'https://mainichi.jp', category: 'world', continent: 'asia', country: 'Japan', url: 'https://mainichi.jp/rss/etc/mainichi-flash.rss' },
 
-  // ---- Business & innovation -------------------------------------------
-  { id: 'bbc-business', name: 'BBC News', home: 'https://www.bbc.com/news/business', category: 'business', url: 'https://feeds.bbci.co.uk/news/business/rss.xml' },
-  { id: 'guardian-business', name: 'The Guardian', home: 'https://www.theguardian.com/uk/business', category: 'business', url: 'https://www.theguardian.com/uk/business/rss' },
-  { id: 'npr-business', name: 'NPR', home: 'https://www.npr.org/sections/business/', category: 'business', url: 'https://feeds.npr.org/1006/rss.xml' },
+  // ---- Gulf: covers Saudi Arabia, whose own outlets publish no usable feed
+  { id: 'gulf-thenational', name: 'The National', home: 'https://www.thenationalnews.com', category: 'world', continent: 'asia', country: 'United Arab Emirates', covers: ['Saudi Arabia', 'United Arab Emirates', 'Qatar', 'Kuwait', 'Oman', 'Bahrain'], url: 'https://www.thenationalnews.com/arc/outboundfeeds/rss/?outputType=xml' },
+  { id: 'gulf-mem', name: 'Middle East Monitor', home: 'https://www.middleeastmonitor.com', category: 'politics', continent: 'asia', country: 'United Kingdom', covers: ['Saudi Arabia', 'Palestine', 'Israel', 'Egypt', 'United Arab Emirates'], url: 'https://www.middleeastmonitor.com/feed/' },
+
+  // ===================================================== EUROPE
+  { id: 'uk-bbc-europe', name: 'BBC News', home: 'https://www.bbc.com/news/world/europe', category: 'world', continent: 'europe', country: 'United Kingdom', url: 'https://feeds.bbci.co.uk/news/world/europe/rss.xml' },
+  { id: 'uk-guardian-europe', name: 'The Guardian', home: 'https://www.theguardian.com/world/europe-news', category: 'world', continent: 'europe', country: 'United Kingdom', url: 'https://www.theguardian.com/world/europe-news/rss' },
+  { id: 'uk-bbc-politics', name: 'BBC News', home: 'https://www.bbc.com/news/politics', category: 'politics', continent: 'europe', country: 'United Kingdom', url: 'https://feeds.bbci.co.uk/news/politics/rss.xml' },
+  { id: 'uk-guardian-politics', name: 'The Guardian', home: 'https://www.theguardian.com/politics', category: 'politics', continent: 'europe', country: 'United Kingdom', url: 'https://www.theguardian.com/politics/rss' },
+  { id: 'uk-guardian-env', name: 'The Guardian', home: 'https://www.theguardian.com/environment', category: 'environment', continent: 'europe', country: 'United Kingdom', url: 'https://www.theguardian.com/environment/rss' },
+  { id: 'uk-guardian-culture', name: 'The Guardian', home: 'https://www.theguardian.com/culture', category: 'entertainment', continent: 'europe', country: 'United Kingdom', url: 'https://www.theguardian.com/culture/rss' },
+  { id: 'uk-guardian-sport', name: 'The Guardian', home: 'https://www.theguardian.com/sport', category: 'sports', continent: 'europe', country: 'United Kingdom', url: 'https://www.theguardian.com/sport/rss' },
+  { id: 'uk-bbc-sport', name: 'BBC Sport', home: 'https://www.bbc.com/sport', category: 'sports', continent: 'europe', country: 'United Kingdom', url: 'https://feeds.bbci.co.uk/sport/rss.xml' },
+  { id: 'uk-bbc-ent', name: 'BBC News', home: 'https://www.bbc.com/news/entertainment_and_arts', category: 'entertainment', continent: 'europe', country: 'United Kingdom', url: 'https://feeds.bbci.co.uk/news/entertainment_and_arts/rss.xml' },
+  { id: 'uk-bbc-health', name: 'BBC News', home: 'https://www.bbc.com/news/health', category: 'health', continent: 'europe', country: 'United Kingdom', url: 'https://feeds.bbci.co.uk/news/health/rss.xml' },
+  { id: 'uk-bbc-tech', name: 'BBC News', home: 'https://www.bbc.com/news/technology', category: 'technology', continent: 'europe', country: 'United Kingdom', url: 'https://feeds.bbci.co.uk/news/technology/rss.xml' },
+  { id: 'uk-bbc-business', name: 'BBC News', home: 'https://www.bbc.com/news/business', category: 'business', continent: 'europe', country: 'United Kingdom', url: 'https://feeds.bbci.co.uk/news/business/rss.xml' },
+  { id: 'uk-bbc-education', name: 'BBC News', home: 'https://www.bbc.com/news/education', category: 'education', continent: 'europe', country: 'United Kingdom', url: 'https://feeds.bbci.co.uk/news/education/rss.xml' },
+  { id: 'uk-bbc-science', name: 'BBC News', home: 'https://www.bbc.com/news/science_and_environment', category: 'science', continent: 'europe', country: 'United Kingdom', url: 'https://feeds.bbci.co.uk/news/science_and_environment/rss.xml' },
+
+  { id: 'de-dw', name: 'Deutsche Welle', home: 'https://www.dw.com', category: 'world', continent: 'europe', country: 'Germany', url: 'https://rss.dw.com/rdf/rss-en-eu' },
+  { id: 'de-spiegel', name: 'Der Spiegel', home: 'https://www.spiegel.de/international', category: 'world', continent: 'europe', country: 'Germany', url: 'https://www.spiegel.de/international/index.rss' },
+
+  { id: 'fr-france24', name: 'France 24', home: 'https://www.france24.com', category: 'world', continent: 'europe', country: 'France', url: 'https://www.france24.com/en/europe/rss' },
+
+  { id: 'it-ansa', name: 'ANSA', home: 'https://www.ansa.it/english', category: 'world', continent: 'europe', country: 'Italy', url: 'https://www.ansa.it/english/english_rss.xml' },
+
+  { id: 'ru-rt', name: 'RT', home: 'https://www.rt.com', category: 'world', continent: 'europe', country: 'Russia', url: 'https://www.rt.com/rss/news/' },
+  { id: 'ru-moscowtimes', name: 'The Moscow Times', home: 'https://www.themoscowtimes.com', category: 'world', continent: 'europe', country: 'Russia', url: 'https://www.themoscowtimes.com/rss/news' },
+
+  // ===================================================== AFRICA
+  { id: 'af-allafrica', name: 'AllAfrica', home: 'https://allafrica.com', category: 'world', continent: 'africa', country: 'Africa', covers: ['Nigeria', 'Kenya', 'South Africa', 'Ghana', 'Egypt', 'Ethiopia'], url: 'https://allafrica.com/tools/headlines/rdf/latest/headlines.rdf' },
+  { id: 'af-iol', name: 'IOL', home: 'https://iol.co.za', category: 'world', continent: 'africa', country: 'South Africa', url: 'https://iol.co.za/rss/' },
+  { id: 'ng-punch', name: 'Punch', home: 'https://punchng.com', category: 'world', continent: 'africa', country: 'Nigeria', url: 'https://punchng.com/feed/' },
+  { id: 'gh-joyonline', name: 'MyJoyOnline', home: 'https://www.myjoyonline.com', category: 'world', continent: 'africa', country: 'Ghana', url: 'https://www.myjoyonline.com/feed/' },
+  { id: 'ke-capitalfm', name: 'Capital FM Kenya', home: 'https://www.capitalfm.co.ke', category: 'world', continent: 'africa', country: 'Kenya', url: 'https://www.capitalfm.co.ke/news/feed/' },
+  { id: 'ke-kbc', name: 'KBC', home: 'https://www.kbc.co.ke', category: 'world', continent: 'africa', country: 'Kenya', url: 'https://www.kbc.co.ke/feed/' },
+  { id: 'eg-egyptind', name: 'Egypt Independent', home: 'https://egyptindependent.com', category: 'world', continent: 'africa', country: 'Egypt', url: 'https://egyptindependent.com/feed/' },
+
+  // ===================================================== NORTH AMERICA
+  { id: 'us-npr', name: 'NPR', home: 'https://www.npr.org', category: 'world', continent: 'north-america', country: 'United States', url: 'https://feeds.npr.org/1001/rss.xml' },
+  { id: 'us-npr-politics', name: 'NPR', home: 'https://www.npr.org/sections/politics/', category: 'politics', continent: 'north-america', country: 'United States', url: 'https://feeds.npr.org/1014/rss.xml' },
+  { id: 'us-npr-health', name: 'NPR', home: 'https://www.npr.org/sections/health/', category: 'health', continent: 'north-america', country: 'United States', url: 'https://feeds.npr.org/1128/rss.xml' },
+  { id: 'us-npr-education', name: 'NPR', home: 'https://www.npr.org/sections/education/', category: 'education', continent: 'north-america', country: 'United States', url: 'https://feeds.npr.org/1013/rss.xml' },
+  { id: 'us-npr-business', name: 'NPR', home: 'https://www.npr.org/sections/business/', category: 'business', continent: 'north-america', country: 'United States', url: 'https://feeds.npr.org/1006/rss.xml' },
+  { id: 'us-npr-science', name: 'NPR', home: 'https://www.npr.org/sections/science/', category: 'science', continent: 'north-america', country: 'United States', url: 'https://feeds.npr.org/1007/rss.xml' },
+  { id: 'us-npr-tech', name: 'NPR', home: 'https://www.npr.org/sections/technology/', category: 'technology', continent: 'north-america', country: 'United States', url: 'https://feeds.npr.org/1019/rss.xml' },
+  { id: 'us-nyt-americas', name: 'The New York Times', home: 'https://www.nytimes.com/section/world/americas', category: 'world', continent: 'north-america', country: 'United States', covers: ['United States', 'Canada', 'Mexico'], url: 'https://rss.nytimes.com/services/xml/rss/nyt/Americas.xml' },
+  { id: 'us-variety', name: 'Variety', home: 'https://variety.com', category: 'entertainment', continent: 'north-america', country: 'United States', url: 'https://variety.com/feed/' },
+  { id: 'us-spacecom', name: 'Space.com', home: 'https://www.space.com', category: 'space', continent: 'north-america', country: 'United States', url: 'https://www.space.com/feeds/all' },
+  { id: 'us-nasa', name: 'NASA', home: 'https://www.nasa.gov', category: 'space', continent: 'north-america', country: 'United States', url: 'https://www.nasa.gov/rss/dyn/breaking_news.rss' },
+  { id: 'ca-globalnews', name: 'Global News', home: 'https://globalnews.ca', category: 'world', continent: 'north-america', country: 'Canada', url: 'https://globalnews.ca/feed/' },
+  { id: 'mx-mexnews', name: 'Mexico News Daily', home: 'https://mexiconewsdaily.com', category: 'world', continent: 'north-america', country: 'Mexico', url: 'https://mexiconewsdaily.com/feed/' },
+
+  // ===================================================== SOUTH AMERICA
+  { id: 'br-riotimes', name: 'Rio Times', home: 'https://www.riotimesonline.com', category: 'world', continent: 'south-america', country: 'Brazil', url: 'https://www.riotimesonline.com/feed/' },
+  { id: 'ar-batimes', name: 'Buenos Aires Times', home: 'https://www.batimes.com.ar', category: 'world', continent: 'south-america', country: 'Argentina', url: 'https://www.batimes.com.ar/feed' },
+  { id: 'ar-clarin', name: 'Clarín', home: 'https://www.clarin.com', category: 'world', continent: 'south-america', country: 'Argentina', url: 'https://www.clarin.com/rss/mundo/' },
+  { id: 'co-colombiareports', name: 'Colombia Reports', home: 'https://colombiareports.com', category: 'world', continent: 'south-america', country: 'Colombia', url: 'https://colombiareports.com/feed/' },
+  { id: 'cl-cooperativa', name: 'Cooperativa', home: 'https://www.cooperativa.cl', category: 'world', continent: 'south-america', country: 'Chile', url: 'https://www.cooperativa.cl/noticias/site/tax/port/all/rss____1.xml' },
+  { id: 'pe-rpp', name: 'RPP', home: 'https://rpp.pe', category: 'world', continent: 'south-america', country: 'Peru', url: 'https://rpp.pe/feed' },
+
+  // ===================================================== OCEANIA
+  { id: 'au-abc', name: 'ABC News', home: 'https://www.abc.net.au/news', category: 'world', continent: 'oceania', country: 'Australia', url: 'https://www.abc.net.au/news/feed/51120/rss.xml' },
+  { id: 'au-smh', name: 'The Sydney Morning Herald', home: 'https://www.smh.com.au', category: 'world', continent: 'oceania', country: 'Australia', url: 'https://www.smh.com.au/rss/feed.xml' },
+  { id: 'au-guardian-au', name: 'The Guardian Australia', home: 'https://www.theguardian.com/au', category: 'world', continent: 'oceania', country: 'Australia', url: 'https://www.theguardian.com/au/rss' },
+  { id: 'nz-stuff', name: 'Stuff', home: 'https://www.stuff.co.nz', category: 'world', continent: 'oceania', country: 'New Zealand', url: 'https://www.stuff.co.nz/rss' },
+  { id: 'nz-rnz', name: 'RNZ', home: 'https://www.rnz.co.nz', category: 'world', continent: 'oceania', country: 'New Zealand', url: 'https://www.rnz.co.nz/rss/national.xml' },
+
+  // ===================================================== ANTARCTICA
+  // Research and logistics reporting from the national programmes that work there.
+  { id: 'aq-antarctic-div', name: 'Australian Antarctic Division', home: 'https://www.antarctica.gov.au', category: 'science', continent: 'antarctica', country: 'Antarctica', url: 'https://www.antarctica.gov.au/news/rss/' },
+  { id: 'aq-bas', name: 'British Antarctic Survey', home: 'https://www.bas.ac.uk', category: 'science', continent: 'antarctica', country: 'Antarctica', url: 'https://www.bas.ac.uk/news/feed/' },
+  { id: 'aq-ale', name: 'Antarctic Logistics & Expeditions', home: 'https://antarctic-logistics.com', category: 'science', continent: 'antarctica', country: 'Antarctica', url: 'https://antarctic-logistics.com/feed/' },
+
+  // ===================================================== GLOBAL TOPICS
+  { id: 'global-bbc-top', name: 'BBC News', home: 'https://www.bbc.com/news', category: 'breaking', continent: 'europe', country: 'United Kingdom', covers: ['United Kingdom', 'World'], url: 'https://feeds.bbci.co.uk/news/rss.xml' },
+  { id: 'global-guardian-world', name: 'The Guardian', home: 'https://www.theguardian.com/world', category: 'breaking', continent: 'europe', country: 'United Kingdom', covers: ['United Kingdom', 'World'], url: 'https://www.theguardian.com/world/rss' },
+  { id: 'global-aljazeera', name: 'Al Jazeera', home: 'https://www.aljazeera.com', category: 'breaking', continent: 'asia', country: 'Qatar', covers: ['Qatar', 'World'], url: 'https://www.aljazeera.com/xml/rss/all.xml' },
+  { id: 'global-ars', name: 'Ars Technica', home: 'https://arstechnica.com', category: 'technology', continent: 'north-america', country: 'United States', url: 'https://feeds.arstechnica.com/arstechnica/index' },
+  { id: 'global-techcrunch', name: 'TechCrunch', home: 'https://techcrunch.com', category: 'technology', continent: 'north-america', country: 'United States', url: 'https://techcrunch.com/feed/' },
+  { id: 'global-guardian-tech', name: 'The Guardian', home: 'https://www.theguardian.com/uk/technology', category: 'technology', continent: 'europe', country: 'United Kingdom', url: 'https://www.theguardian.com/uk/technology/rss' },
+  { id: 'global-mit-tr', name: 'MIT Technology Review', home: 'https://www.technologyreview.com', category: 'ai', continent: 'north-america', country: 'United States', url: 'https://www.technologyreview.com/feed/' },
+  { id: 'global-marktechpost', name: 'MarkTechPost', home: 'https://www.marktechpost.com', category: 'ai', continent: 'north-america', country: 'United States', url: 'https://www.marktechpost.com/feed/' },
+  { id: 'global-nature', name: 'Nature', home: 'https://www.nature.com', category: 'science', continent: 'europe', country: 'United Kingdom', url: 'https://www.nature.com/nature.rss' },
+  { id: 'global-sciencedaily', name: 'ScienceDaily', home: 'https://www.sciencedaily.com', category: 'science', continent: 'north-america', country: 'United States', url: 'https://www.sciencedaily.com/rss/top/science.xml' },
+  { id: 'global-guardian-science', name: 'The Guardian', home: 'https://www.theguardian.com/science', category: 'science', continent: 'europe', country: 'United Kingdom', url: 'https://www.theguardian.com/science/rss' },
+  { id: 'global-guardian-education', name: 'The Guardian', home: 'https://www.theguardian.com/education', category: 'education', continent: 'europe', country: 'United Kingdom', url: 'https://www.theguardian.com/education/rss' },
+  { id: 'global-insidehighered', name: 'Inside Higher Ed', home: 'https://www.insidehighered.com', category: 'education', continent: 'north-america', country: 'United States', url: 'https://www.insidehighered.com/rss.xml' },
+  { id: 'global-guardian-business', name: 'The Guardian', home: 'https://www.theguardian.com/uk/business', category: 'business', continent: 'europe', country: 'United Kingdom', url: 'https://www.theguardian.com/uk/business/rss' },
+  { id: 'global-who', name: 'World Health Organization', home: 'https://www.who.int', category: 'health', continent: 'europe', country: 'Switzerland', covers: ['World'], url: 'https://www.who.int/rss-feeds/news-english.xml' },
+  { id: 'global-cricinfo', name: 'ESPNcricinfo', home: 'https://www.espncricinfo.com', category: 'sports', continent: 'oceania', country: 'Australia', covers: ['Australia', 'Bangladesh', 'India', 'Pakistan', 'United Kingdom', 'World'], url: 'https://www.espncricinfo.com/rss/content/story/feeds/0.xml' },
 ];
 
 // ---------------------------------------------------------------- utilities
@@ -193,6 +280,10 @@ function parseFeed(xml, source) {
       source: source.name,
       sourceId: source.id,
       sourceHome: source.home,
+      continent: source.continent,
+      country: source.country,
+      ...(source.desk ? { desk: source.desk } : {}),
+      ...(source.covers ? { covers: source.covers } : {}),
     });
   }
   return out;
@@ -249,6 +340,10 @@ async function main() {
         home: source.home,
         category: source.category,
         count: result.value.parsed.length,
+        continent: source.continent,
+        country: source.country,
+        ...(source.desk ? { desk: source.desk } : {}),
+        ...(source.covers ? { covers: source.covers } : {}),
       });
       items.push(...result.value.parsed);
     } else {
@@ -264,18 +359,52 @@ async function main() {
     return true;
   });
 
-  unique.sort((a, b) => (b.publishedAt || '').localeCompare(a.publishedAt || ''));
+  // The same article often arrives from two feeds of one publisher (a section
+  // feed and a homepage feed), which produces different ids for one URL. The
+  // URL, minus its query string and fragment, is what actually identifies it.
+  const byLink = new Map();
+  for (const item of unique) {
+    const key = item.link.split('#')[0].split('?')[0].replace(/\/$/, '').toLowerCase();
+    if (!byLink.has(key)) byLink.set(key, item);
+  }
+  const deduped = [...byLink.values()];
+
+  deduped.sort((a, b) => (b.publishedAt || '').localeCompare(a.publishedAt || ''));
+
+  // Some publishers keep years-old items in their feed (archives, evergreen
+  // pages), and a few stamp entries in the future. A news snapshot that mixes
+  // a story from today with one from 2020 is misleading, so anything older than
+  // the window is dropped, and a future stamp is clamped to now: the article is
+  // published, so we do not claim it was published later. Undated items are
+  // kept — they are still current news, and the UI shows them without a time.
+  const now = Date.now();
+  const FUTURE_SLACK_MS = 60 * 60 * 1000;
+  const fresh = [];
+  for (const item of deduped) {
+    if (!item.publishedAt) {
+      fresh.push(item);
+      continue;
+    }
+    const time = Date.parse(item.publishedAt);
+    if (Number.isNaN(time)) {
+      fresh.push(item);
+      continue;
+    }
+    if (time < now - MAX_AGE_MS || time > now + FUTURE_SLACK_MS) continue;
+    fresh.push(time > now ? { ...item, publishedAt: new Date(now).toISOString() } : item);
+  }
+  const staleCount = deduped.length - fresh.length;
 
   const snapshot = {
     generatedAt: new Date().toISOString(),
-    itemCount: unique.length,
+    itemCount: fresh.length,
     sourceCount: sources.length,
     sources,
     failures,
-    items: unique,
+    items: fresh,
   };
 
-  if (!unique.length) {
+  if (!fresh.length) {
     if (previous?.items?.length) {
       console.warn('feeds: every source failed; keeping the previous snapshot untouched.');
       return;
@@ -288,7 +417,10 @@ async function main() {
   await mkdir(dirname(OUT), { recursive: true });
   await writeFile(OUT, JSON.stringify(snapshot));
 
-  console.log(`feeds: wrote ${unique.length} items from ${sources.length}/${FEEDS.length} sources.`);
+  console.log(
+    `feeds: wrote ${fresh.length} items from ${sources.length}/${FEEDS.length} sources` +
+      (staleCount ? ` (dropped ${staleCount} outside the ${MAX_AGE_DAYS}-day window).` : '.')
+  );
   if (failures.length) {
     console.warn(`feeds: ${failures.length} source(s) unavailable: ${failures.map((f) => f.id).join(', ')}`);
   }

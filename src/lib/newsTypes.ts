@@ -1,5 +1,7 @@
 /** Shared shapes for the real-time information layer. */
 
+import type { BangladeshDesk, ContinentId } from './regions';
+
 /** A news article from a publisher feed. Every field comes from the source. */
 export interface NewsArticle {
   id: string;
@@ -13,15 +15,30 @@ export interface NewsArticle {
   source: string;
   sourceId: string;
   sourceHome: string;
+  /** Continent the publisher's feed belongs to. Set at build time. */
+  continent: ContinentId;
+  /** Country of the publisher's desk, e.g. "Bangladesh". */
+  country: string;
+  /** Bangladesh editorial desk, only present on Bangladeshi feeds. */
+  desk?: BangladeshDesk;
+  /** Countries this publisher's desk reports on, when it spans more than one. */
+  covers?: string[];
 }
 
 export type NewsCategory =
+  | 'breaking'
   | 'world'
+  | 'politics'
   | 'technology'
   | 'ai'
   | 'science'
   | 'education'
-  | 'business';
+  | 'business'
+  | 'sports'
+  | 'health'
+  | 'environment'
+  | 'entertainment'
+  | 'space';
 
 export interface FeedSource {
   id: string;
@@ -29,6 +46,12 @@ export interface FeedSource {
   home: string;
   category: NewsCategory;
   count: number;
+  /** Continent this publisher's desk belongs to. */
+  continent: ContinentId;
+  country: string;
+  desk?: BangladeshDesk;
+  /** Countries this desk actually reports on. Absent means only `country`. */
+  covers?: string[];
 }
 
 export interface FeedSnapshot {

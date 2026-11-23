@@ -27,14 +27,28 @@ export const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
+    title: 'World',
+    items: [
+      { to: '/world', label: 'Global News', icon: 'globe' },
+      { to: '/bangladesh', label: 'Bangladesh Special', icon: 'globe' },
+      { to: '/intelligence', label: 'Nexora AI', icon: 'brain' },
+    ],
+  },
+  {
     title: 'Live Feeds',
     items: [
-      { to: '/world', label: 'World News', icon: 'globe' },
+      { to: '/breaking', label: 'Front Page', icon: 'bell' },
+      { to: '/politics', label: 'Politics', icon: 'shield' },
       { to: '/technology', label: 'Technology', icon: 'chip' },
       { to: '/ai', label: 'Artificial Intelligence', icon: 'brain' },
       { to: '/science', label: 'Science', icon: 'flask' },
-      { to: '/education', label: 'Education', icon: 'book' },
+      { to: '/education', label: 'Education & Jobs', icon: 'book' },
       { to: '/business', label: 'Business', icon: 'trend' },
+      { to: '/sports', label: 'Sports', icon: 'trend' },
+      { to: '/health', label: 'Health', icon: 'shield' },
+      { to: '/environment', label: 'Environment', icon: 'globe' },
+      { to: '/entertainment', label: 'Entertainment', icon: 'sparkle' },
+      { to: '/space', label: 'Space', icon: 'compass' },
     ],
   },
   {

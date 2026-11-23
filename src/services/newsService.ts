@@ -16,6 +16,8 @@
 
 import { cachedJson } from '../lib/apiCache';
 import { BASE_PATH } from '../lib/env';
+import { CONTINENTS } from '../lib/regions';
+import type { BangladeshDesk, ContinentId } from '../lib/regions';
 import type {
   AiModel,
   FeedSnapshot,
@@ -30,11 +32,23 @@ export const CATEGORY_META: Record<
   NewsCategory,
   { label: string; path: string; blurb: string; accent: string }
 > = {
+  breaking: {
+    label: 'Front Page',
+    path: '/breaking',
+    blurb: 'The front pages of major publishers, as they publish. Not every item here is a developing story.',
+    accent: 'from-red-500/20 to-orange-500/10',
+  },
   world: {
     label: 'World News',
     path: '/world',
     blurb: 'Reporting from international publishers, updated as they publish.',
     accent: 'from-sky-500/20 to-cyan-500/10',
+  },
+  politics: {
+    label: 'Politics & Government',
+    path: '/politics',
+    blurb: 'Parliaments, elections, policy and the people who set them.',
+    accent: 'from-indigo-500/20 to-blue-500/10',
   },
   technology: {
     label: 'Technology',
@@ -49,22 +63,52 @@ export const CATEGORY_META: Record<
     accent: 'from-fuchsia-500/20 to-purple-500/10',
   },
   science: {
-    label: 'Science',
+    label: 'Science & Research',
     path: '/science',
     blurb: 'Research findings and discoveries from peer-reviewed sources.',
     accent: 'from-emerald-500/20 to-teal-500/10',
   },
   education: {
-    label: 'Education',
+    label: 'Education & Jobs',
     path: '/education',
-    blurb: 'Schools, universities and learning policy.',
+    blurb: 'Schools, universities, recruitment and learning policy.',
     accent: 'from-amber-500/20 to-orange-500/10',
   },
   business: {
-    label: 'Business',
+    label: 'Business & Economy',
     path: '/business',
     blurb: 'Markets, enterprise and innovation.',
     accent: 'from-rose-500/20 to-pink-500/10',
+  },
+  sports: {
+    label: 'Sports & Football',
+    path: '/sports',
+    blurb: 'Football, cricket and the rest of the sporting week.',
+    accent: 'from-lime-500/20 to-green-500/10',
+  },
+  health: {
+    label: 'Health & Lifestyle',
+    path: '/health',
+    blurb: 'Public health, medicine and living well.',
+    accent: 'from-teal-500/20 to-cyan-500/10',
+  },
+  environment: {
+    label: 'Environment & Climate',
+    path: '/environment',
+    blurb: 'Climate, conservation and the changing planet.',
+    accent: 'from-green-500/20 to-emerald-500/10',
+  },
+  entertainment: {
+    label: 'Entertainment & Movies',
+    path: '/entertainment',
+    blurb: 'Film, television, music and culture.',
+    accent: 'from-purple-500/20 to-pink-500/10',
+  },
+  space: {
+    label: 'Space & Astronomy',
+    path: '/space',
+    blurb: 'Missions, launches and what the sky is doing.',
+    accent: 'from-slate-500/20 to-indigo-500/10',
   },
 };
 
@@ -122,6 +166,160 @@ export async function getCategoryCounts(): Promise<Record<NewsCategory, number>>
 export async function getAllArticles(): Promise<NewsArticle[]> {
   const snapshot = await loadSnapshot();
   return snapshot.items;
+}
+
+// -------------------------------------------------------- geographic queries
+
+/** Every article from one continent, newest first. */
+export async function getContinentArticles(continent: ContinentId): Promise<NewsArticle[]> {
+  const snapshot = await loadSnapshot();
+  return snapshot.items.filter((item) => item.continent === continent);
+}
+
+/**
+ * Articles about one country.
+ *
+ * Matching is on the publisher's declared coverage, not on words in the
+ * headline: a Gulf desk that covers Saudi Arabia serves that filter, while an
+ * unrelated story that merely mentions the word does not.
+ */
+export async function getCountryArticles(country: string): Promise<NewsArticle[]> {
+  const snapshot = await loadSnapshot();
+  return snapshot.items.filter(
+    (item) => item.country === country || item.covers?.includes(country)
+  );
+}
+
+/** Bangladesh-only articles, optionally narrowed to one editorial desk. */
+export async function getBangladeshArticles(desk?: BangladeshDesk): Promise<NewsArticle[]> {
+  const snapshot = await loadSnapshot();
+  return snapshot.items.filter(
+    (item) => item.country === 'Bangladesh' && (!desk || item.desk === desk)
+  );
+}
+
+export interface ContinentStat {
+  id: ContinentId;
+  articles: number;
+  countries: string[];
+  publishers: number;
+}
+
+/** Real per-continent counts, computed from the snapshot. */
+export async function getContinentStats(): Promise<ContinentStat[]> {
+  const snapshot = await loadSnapshot();
+  return CONTINENTS.map((continent) => {
+    const items = snapshot.items.filter((item) => item.continent === continent.id);
+    return {
+      id: continent.id,
+      articles: items.length,
+      countries: [...new Set(items.map((item) => item.country))].sort(),
+      publishers: new Set(items.map((item) => item.sourceId)).size,
+    };
+  });
+}
+
+// ------------------------------------------------------------- story clusters
+
+export interface StoryCluster {
+  /** Normalised key, stable for the same event. */
+  key: string;
+  /** The most recent article, used as the headline. */
+  lead: NewsArticle;
+  /** Every article about the same story, newest first. */
+  articles: NewsArticle[];
+  /** Distinct publishers reporting it. */
+  sources: string[];
+}
+
+const STOP_WORDS = new Set([
+  'the', 'a', 'an', 'and', 'or', 'but', 'of', 'to', 'in', 'on', 'for', 'with', 'at', 'by',
+  'from', 'as', 'is', 'are', 'was', 'were', 'be', 'been', 'it', 'its', 'this', 'that',
+  'after', 'before', 'over', 'into', 'about', 'says', 'said', 'will', 'has', 'have', 'had',
+  'new', 'more', 'than', 'up', 'out', 'who', 'what', 'when', 'why', 'how', 'not', 'no',
+  // Newsroom vocabulary: these appear in hundreds of unrelated headlines, so they
+  // can never be evidence that two articles describe the same event.
+  'talks', 'talk', 'deal', 'deals', 'without', 'amid', 'says', 'claim', 'claims',
+  'claiming', 'could', 'would', 'should', 'may', 'might', 'first', 'last', 'two',
+  'three', 'four', 'five', 'one', 'next', 'back', 'now', 'today', 'week', 'year',
+  'years', 'day', 'days', 'live', 'update', 'updates', 'latest', 'breaking', 'news',
+  'report', 'reports', 'reportedly', 'according', 'world', 'global', 'ahead',
+  'set', 'sets', 'get', 'gets', 'make', 'makes', 'made', 'take', 'takes', 'took',
+  'among', 'against', 'during', 'under', 'between', 'through', 'while',
+]);
+
+/**
+ * Words too common across a news day to prove anything. Computed from the
+ * corpus rather than hard-coded, because what is distinctive changes daily.
+ */
+function buildCommonWords(articles: NewsArticle[]): Set<string> {
+  const frequency = new Map<string, number>();
+  for (const article of articles) {
+    for (const token of new Set(storyTokens(article.title))) {
+      frequency.set(token, (frequency.get(token) ?? 0) + 1);
+    }
+  }
+  const threshold = Math.max(8, articles.length * 0.01);
+  return new Set(
+    [...frequency.entries()].filter(([, count]) => count >= threshold).map(([token]) => token)
+  );
+}
+
+function storyTokens(title: string): string[] {
+  return title
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .split(/\s+/)
+    .filter((word) => word.length > 2 && !STOP_WORDS.has(word));
+}
+
+/**
+ * Groups articles that describe the same event, so the same story from several
+ * newsrooms can be read side by side.
+ *
+ * Two articles join a cluster only when they share at least three significant
+ * words, and every shared word is rare enough to be distinctive. Matching
+ * against the cluster's lead article (never its accumulated vocabulary) stops a
+ * chain of loosely related stories collapsing into one group, which is what a
+ * naive "share any three words" rule does once words like "talks" or "deal" are
+ * in play.
+ */
+export function clusterStories(articles: NewsArticle[], minSources = 2): StoryCluster[] {
+  const common = buildCommonWords(articles);
+  const clusters: { tokens: Set<string>; articles: NewsArticle[] }[] = [];
+
+  for (const article of articles) {
+    const tokens = storyTokens(article.title).filter((token) => !common.has(token));
+    if (tokens.length < 3) continue;
+    const tokenSet = new Set(tokens);
+
+    const match = clusters.find((cluster) => {
+      const shared = [...tokenSet].filter((token) => cluster.tokens.has(token));
+      return shared.length >= 3;
+    });
+
+    if (match) {
+      match.articles.push(article);
+    } else {
+      clusters.push({ tokens: tokenSet, articles: [article] });
+    }
+  }
+
+  return clusters
+    .map((cluster) => {
+      const sorted = [...cluster.articles].sort((a, b) =>
+        (b.publishedAt || '').localeCompare(a.publishedAt || '')
+      );
+      const sources = [...new Set(sorted.map((article) => article.source))];
+      return {
+        key: sorted[0].id,
+        lead: sorted[0],
+        articles: sorted,
+        sources,
+      };
+    })
+    .filter((cluster) => cluster.sources.length >= minSources)
+    .sort((a, b) => b.sources.length - a.sources.length || b.articles.length - a.articles.length);
 }
 
 // ------------------------------------------------------------- live sources

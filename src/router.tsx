@@ -12,6 +12,10 @@ import CategoryPage from './pages/CategoryPage';
 // Route-level code splitting keeps the first paint small; each page loads on demand.
 const Explore = lazy(() => import('./pages/Explore'));
 const Search = lazy(() => import('./pages/Search'));
+const World = lazy(() => import('./pages/World'));
+const ContinentPage = lazy(() => import('./pages/ContinentPage'));
+const Bangladesh = lazy(() => import('./pages/Bangladesh'));
+const Intelligence = lazy(() => import('./pages/Intelligence'));
 const Library = lazy(() => import('./pages/Library'));
 const Saved = lazy(() => import('./pages/Saved'));
 const History = lazy(() => import('./pages/History'));
@@ -65,13 +69,25 @@ export const router = createBrowserRouter(
         { path: 'explore', element: withSuspense(<Explore />) },
         { path: 'search', element: withSuspense(<Search />) },
 
+        // Global news system — every continent, plus Bangladesh as its own desk
+        { path: 'world', element: withSuspense(<World />) },
+        { path: 'continent/:id', element: withSuspense(<ContinentPage />) },
+        { path: 'bangladesh', element: withSuspense(<Bangladesh />) },
+        { path: 'intelligence', element: withSuspense(<Intelligence />) },
+
         // Live feeds — one page per category, each driven by real publisher feeds
-        { path: 'world', element: withSuspense(<CategoryPage category="world" />) },
+        { path: 'breaking', element: withSuspense(<CategoryPage category="breaking" />) },
+        { path: 'politics', element: withSuspense(<CategoryPage category="politics" />) },
         { path: 'technology', element: withSuspense(<CategoryPage category="technology" />) },
         { path: 'ai', element: withSuspense(<CategoryPage category="ai" />) },
         { path: 'science', element: withSuspense(<CategoryPage category="science" />) },
         { path: 'education', element: withSuspense(<CategoryPage category="education" />) },
         { path: 'business', element: withSuspense(<CategoryPage category="business" />) },
+        { path: 'sports', element: withSuspense(<CategoryPage category="sports" />) },
+        { path: 'health', element: withSuspense(<CategoryPage category="health" />) },
+        { path: 'environment', element: withSuspense(<CategoryPage category="environment" />) },
+        { path: 'entertainment', element: withSuspense(<CategoryPage category="entertainment" />) },
+        { path: 'space', element: withSuspense(<CategoryPage category="space" />) },
 
         // Personal library
         { path: 'library', element: withSuspense(<Library />) },

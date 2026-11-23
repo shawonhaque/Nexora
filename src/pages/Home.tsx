@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { ArticleCard, ArticleSkeleton, EmptyState, ErrorState, Icon } from '../components/news/ArticleCard';
+import type { IconName } from '../components/news/ArticleCard';
 import { FreshnessBar, PageBody, PageHeader, StatCard, SubHeading } from '../components/ui/PageHeader';
 import { PageMeta } from '../components/layout/PageMeta';
 import { useLiveData } from '../hooks/useLiveData';
@@ -30,14 +31,21 @@ interface DashboardData {
   sourceCount: number;
 }
 
-const CATEGORY_ICON = {
+const CATEGORY_ICON: Record<NewsCategory, IconName> = {
+  breaking: 'bell',
   world: 'globe',
+  politics: 'shield',
   technology: 'chip',
   ai: 'brain',
   science: 'flask',
   education: 'book',
   business: 'trend',
-} as const;
+  sports: 'trend',
+  health: 'shield',
+  environment: 'globe',
+  entertainment: 'sparkle',
+  space: 'compass',
+};
 
 export default function Home() {
   const { interests, saved, history } = usePersonalization();
@@ -80,19 +88,21 @@ export default function Home() {
 
   /**
    * Recommendations drawn from the reader's own saved articles, history and
-   * interests. Articles already read or saved are excluded, so this is always
-   * something new; each card carries the reason it was suggested.
+   * interests. With no signal at all the engine would just repeat the newest
+   * articles, which are already in the feed above, so the section is hidden.
    */
   const recommended = useMemo(() => {
     if (!data) return [];
+    if (!interests.length && !saved.length && !history.length) return [];
+    const shown = new Set(feed.map((article) => article.id));
     return recommendArticles({
-      corpus: data.corpus,
+      corpus: data.corpus.filter((article) => !shown.has(article.id)),
       history,
       saved,
       interests,
       limit: 6,
     });
-  }, [data, history, saved, interests]);
+  }, [data, feed, history, saved, interests]);
 
   const totalArticles = data ? Object.values(data.counts).reduce((sum, value) => sum + value, 0) : 0;
 
