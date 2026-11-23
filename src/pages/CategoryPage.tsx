@@ -1,13 +1,16 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArticleCard, ArticleSkeleton, EmptyState, ErrorState, Icon } from '../components/news/ArticleCard';
 import { FreshnessBar, PageBody, PageHeader } from '../components/ui/PageHeader';
+import { Pagination } from '../components/ui/Pagination';
 import { PageMeta } from '../components/layout/PageMeta';
 import { useLiveData } from '../hooks/useLiveData';
 import { getCategoryArticles, CATEGORY_META } from '../services/newsService';
 import type { NewsArticle, NewsCategory } from '../lib/newsTypes';
 import { loadSnapshot } from '../services/newsService';
 import { relativeTime } from '../lib/format';
+
+const PAGE_SIZE = 12;
 
 type SortMode = 'newest' | 'oldest' | 'source';
 
@@ -20,6 +23,7 @@ export default function CategoryPage({ category }: { category: NewsCategory }) {
   const meta = CATEGORY_META[category];
   const [sort, setSort] = useState<SortMode>('newest');
   const [sourceFilter, setSourceFilter] = useState<string>('all');
+  const [page, setPage] = useState(1);
 
   const loader = useCallback(async () => {
     const [articles, snapshot] = await Promise.all([getCategoryArticles(category), loadSnapshot()]);
@@ -46,6 +50,11 @@ export default function CategoryPage({ category }: { category: NewsCategory }) {
     }
     return sorted;
   }, [articles, sort, sourceFilter]);
+
+  // A filter change can shrink the result set below the current page.
+  useEffect(() => {
+    setPage(1);
+  }, [sort, sourceFilter, category]);
 
   return (
     <>
@@ -139,11 +148,14 @@ export default function CategoryPage({ category }: { category: NewsCategory }) {
         )}
 
         {!loading && !error && visible.length > 0 && (
-          <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-            {visible.map((article: NewsArticle) => (
-              <ArticleCard key={article.id} article={article} />
-            ))}
-          </div>
+          <>
+            <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+              {visible.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE).map((article: NewsArticle) => (
+                <ArticleCard key={article.id} article={article} />
+              ))}
+            </div>
+            <Pagination page={page} pageSize={PAGE_SIZE} totalItems={visible.length} onPageChange={setPage} />
+          </>
         )}
 
         {!loading && !error && articles.length > 0 && (

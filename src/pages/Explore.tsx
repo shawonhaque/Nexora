@@ -1,7 +1,8 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArticleCard, ArticleSkeleton, EmptyState, ErrorState, Icon } from '../components/news/ArticleCard';
 import { FreshnessBar, PageBody, PageHeader, SubHeading } from '../components/ui/PageHeader';
+import { Pagination } from '../components/ui/Pagination';
 import { PageMeta } from '../components/layout/PageMeta';
 import { useLiveData } from '../hooks/useLiveData';
 import { usePersonalization } from '../hooks/usePersonalization';
@@ -16,6 +17,8 @@ import {
 import { relativeTime } from '../lib/format';
 import type { AiModel, NewsArticle, NewsCategory, RepoTrend, WikiSummary } from '../lib/newsTypes';
 
+const PAGE_SIZE = 12;
+
 type Tab = 'articles' | 'ai' | 'repos' | 'topics';
 
 const TABS: { id: Tab; label: string; icon: 'globe' | 'brain' | 'trend' | 'compass' }[] = [
@@ -29,6 +32,7 @@ export default function Explore() {
   const [tab, setTab] = useState<Tab>('articles');
   const [category, setCategory] = useState<NewsCategory | 'all'>('all');
   const [query, setQuery] = useState('');
+  const [page, setPage] = useState(1);
   const { interests, toggleInterest } = usePersonalization();
 
   const loader = useCallback(async () => {
@@ -54,6 +58,11 @@ export default function Explore() {
     }
     return list;
   }, [data, category, query]);
+
+  // A new filter or tab can shrink the result set below the current page.
+  useEffect(() => {
+    setPage(1);
+  }, [category, query, tab]);
 
   return (
     <>
@@ -141,15 +150,20 @@ export default function Explore() {
                   </button>
                 ))}
               </div>
-              <span className="ml-auto font-mono text-xs text-muted">{articles.length} shown</span>
+              <span className="ml-auto font-mono text-xs text-muted">
+                {articles.length} article{articles.length === 1 ? '' : 's'}
+              </span>
             </div>
 
             {articles.length ? (
-              <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-                {articles.slice(0, 60).map((article: NewsArticle) => (
-                  <ArticleCard key={article.id} article={article} />
-                ))}
-              </div>
+              <>
+                <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+                  {articles.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE).map((article: NewsArticle) => (
+                    <ArticleCard key={article.id} article={article} />
+                  ))}
+                </div>
+                <Pagination page={page} pageSize={PAGE_SIZE} totalItems={articles.length} onPageChange={setPage} />
+              </>
             ) : (
               <EmptyState
                 title="Nothing matches"

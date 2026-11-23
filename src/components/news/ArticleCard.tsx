@@ -9,7 +9,7 @@ export type IconName =
   | 'search' | 'bookmark' | 'clock' | 'bell' | 'user' | 'settings'
   | 'refresh' | 'external' | 'check' | 'sparkle' | 'trend' | 'plus'
   | 'sun' | 'moon' | 'menu' | 'close' | 'arrow-right' | 'filter' | 'trash'
-  | 'compass' | 'shield';
+  | 'compass' | 'shield' | 'chevron-left' | 'chevron-right';
 
 const ICON_PATHS: Record<IconName, JSX.Element> = {
   globe: <><circle cx="12" cy="12" r="9" /><path d="M3 12h18M12 3a15 15 0 0 1 0 18 15 15 0 0 1 0-18Z" /></>,
@@ -39,6 +39,8 @@ const ICON_PATHS: Record<IconName, JSX.Element> = {
   trash: <><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13" /></>,
   compass: <><circle cx="12" cy="12" r="9" /><path d="m15.5 8.5-2 5-5 2 2-5 5-2Z" /></>,
   shield: <path d="M12 3l7 3v5c0 4.5-3 8.2-7 10-4-1.8-7-5.5-7-10V6l7-3Z" />,
+  'chevron-left': <path d="M15 18 9 12l6-6" />,
+  'chevron-right': <path d="m9 18 6-6-6-6" />,
 };
 
 /** Inline SVG icon set, so no icon library is shipped. */

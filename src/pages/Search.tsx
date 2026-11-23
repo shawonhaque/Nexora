@@ -2,12 +2,14 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { ArticleCard, ArticleSkeleton, EmptyState, ErrorState, Icon } from '../components/news/ArticleCard';
 import { PageBody, PageHeader } from '../components/ui/PageHeader';
+import { Pagination } from '../components/ui/Pagination';
 import { PageMeta } from '../components/layout/PageMeta';
 import { runIntelligentSearch, type SearchAnswer } from '../services/intelligentSearch';
 import { CATEGORY_META, NEWS_CATEGORIES } from '../services/newsService';
 import type { NewsCategory } from '../lib/newsTypes';
 
 const HISTORY_KEY = 'nexora:search-history';
+const PAGE_SIZE = 12;
 
 function readHistory(): string[] {
   try {
@@ -34,6 +36,7 @@ export default function Search() {
   const [error, setError] = useState('');
   const [category, setCategory] = useState<NewsCategory | 'all'>('all');
   const [history, setHistory] = useState<string[]>(readHistory);
+  const [page, setPage] = useState(1);
 
   const execute = useCallback(async (rawQuery: string) => {
     const query = rawQuery.trim();
@@ -42,6 +45,7 @@ export default function Search() {
       setAnswer(null);
       return;
     }
+    setPage(1);
     setState('loading');
     setError('');
     try {
@@ -304,24 +308,27 @@ export default function Search() {
                 )}
 
                 {results.length ? (
-                  <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-                    {results.map((article) => {
-                      const entry = answer.ranked.find((item) => item.article.id === article.id);
-                      return (
-                        <div key={article.id} className="relative">
-                          {entry && (
-                            <span
-                              className="absolute right-3 top-3 z-10 rounded-lg bg-black/70 px-2 py-1 font-mono text-[0.68rem] font-semibold text-white backdrop-blur"
-                              title={`BM25 relevance ${(entry.score * 100).toFixed(0)}% — matched: ${entry.matched.join(', ')}`}
-                            >
-                              {(entry.score * 100).toFixed(0)}%
-                            </span>
-                          )}
-                          <ArticleCard article={article} />
-                        </div>
-                      );
-                    })}
-                  </div>
+                  <>
+                    <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+                      {results.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE).map((article) => {
+                        const entry = answer.ranked.find((item) => item.article.id === article.id);
+                        return (
+                          <div key={article.id} className="relative">
+                            {entry && (
+                              <span
+                                className="absolute right-3 top-3 z-10 rounded-lg bg-black/70 px-2 py-1 font-mono text-[0.68rem] font-semibold text-white backdrop-blur"
+                                title={`BM25 relevance ${(entry.score * 100).toFixed(0)}% — matched: ${entry.matched.join(', ')}`}
+                              >
+                                {(entry.score * 100).toFixed(0)}%
+                              </span>
+                            )}
+                            <ArticleCard article={article} />
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <Pagination page={page} pageSize={PAGE_SIZE} totalItems={results.length} onPageChange={setPage} />
+                  </>
                 ) : (
                   <EmptyState
                     title="No results in this topic"
