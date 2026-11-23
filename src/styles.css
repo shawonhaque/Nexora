@@ -22,10 +22,6 @@
     --c-muted: 107 98 87;
     --c-accent: 168 74 41;    /* terracotta */
     --c-accent2: 138 106 44;  /* muted brass */
-    /* The navigation rail is always dark, in both themes: it is the
-       heaviest surface on the page so the reading column keeps the light. */
-    --c-rail: 30 27 24;
-    --c-rail-fg: 240 234 224;
     /* Ink that sits on top of the accent fill. In light mode the
        terracotta is dark enough for white; in dark mode it is lifted,
        so the ink has to flip to near-black to stay legible. */
@@ -43,8 +39,6 @@
     --c-muted: 156 145 132;
     --c-accent: 214 122 84;   /* terracotta, lifted for contrast */
     --c-accent2: 189 152 84;  /* brass */
-    --c-rail: 18 16 15;
-    --c-rail-fg: 235 228 217;
     --c-on-accent: 26 24 22;
   }
 
@@ -189,34 +183,11 @@
   }
 
   /* ---- Navigation rail -----------------------------------------
-     The rail is a fixed dark panel in both themes. Everything inside it
-     flips to light ink, so the page tokens do not leak in and make the
-     labels unreadable. */
+     The rail shares the page's paper stock, so the sidebar reads as part
+     of the sheet rather than a separate dark appliance. Separation comes
+     from the hairline on its inner edge. */
   .rail {
-    @apply border-r border-rail bg-rail text-railfg;
-  }
-  .rail .side-link {
-    @apply text-railfg/60;
-  }
-  .rail .side-link:hover {
-    @apply bg-railfg/10 text-railfg;
-  }
-  .rail .side-link[aria-current='page'] {
-    @apply bg-railfg/15 text-railfg;
-  }
-  .rail .kicker,
-  .rail .text-muted {
-    @apply text-railfg/45;
-  }
-  .rail .text-heading {
-    @apply text-railfg;
-  }
-  .rail .rule {
-    @apply border-railfg/15;
-  }
-  /* Brand mark inverts on the rail: light plate, dark letter. */
-  .rail .brand-mark {
-    @apply border-accent/70 bg-railfg text-rail;
+    @apply border-r border-line bg-bg;
   }
 
   /* Editorial body copy for long-form article content. */

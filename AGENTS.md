@@ -91,10 +91,10 @@ The UI is set as an editorial paper, not a dashboard. Keep it that way.
   variants — `featured`, `standard`, `text` — and `text` deliberately has no
   image so lists can breathe without a grid of identical thumbnails. Do not
   collapse these back into one uniform card grid.
-- **The rail is always dark.** `RootLayout` sets `.rail` on the sidebar and
-  drawer; `.rail` re-scopes the page tokens so links invert in both themes.
-  If you add a new component inside the rail, style it with `railfg` /
-  `text-railfg` utilities or it will inherit page ink and vanish.
+- **The rail is page-coloured.** `RootLayout` sets `.rail` on the sidebar and
+  drawer; it paints `bg-bg` and separates with a hairline on its inner edge, so
+  the sidebar reads as part of the sheet rather than a dark appliance. Style
+  anything inside it with the ordinary page tokens.
 - **`--c-on-accent` exists for a reason.** Terracotta is dark in light mode but
   lifted in dark mode, so white-on-accent only passes AA in light mode. Buttons
   use `text-onaccent`, which flips per theme.

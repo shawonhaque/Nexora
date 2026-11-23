@@ -14,8 +14,6 @@ export default {
         muted: 'rgb(var(--c-muted) / <alpha-value>)',
         accent: 'rgb(var(--c-accent) / <alpha-value>)',
         accent2: 'rgb(var(--c-accent2) / <alpha-value>)',
-        rail: 'rgb(var(--c-rail) / <alpha-value>)',
-        railfg: 'rgb(var(--c-rail-fg) / <alpha-value>)',
         onaccent: 'rgb(var(--c-on-accent) / <alpha-value>)',
       },
       fontFamily: {

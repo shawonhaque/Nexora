@@ -40,7 +40,7 @@ export interface PageMetaProps {
  */
 export function PageMeta({ title, description, image, noIndex = false, jsonLd = null }: PageMetaProps) {
   useEffect(() => {
-    const fullTitle = title === SITE_NAME ? `${SITE_NAME} — Your World of Knowledge` : `${title} · ${SITE_NAME}`;
+    const fullTitle = title === SITE_NAME ? SITE_NAME : `${title} · ${SITE_NAME}`;
     document.title = fullTitle;
 
     const origin = window.location.origin;

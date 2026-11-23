@@ -26,13 +26,8 @@ export function Brand({ compact = false }: { compact?: boolean }) {
     <Link to="/" className="group flex items-center gap-2.5" aria-label="NEXORA home">
       <BrandMark />
       {!compact && (
-        <span className="flex flex-col leading-none">
-          <span className="font-serif text-[1.06rem] font-semibold tracking-[0.14em] text-heading">
-            NEXORA
-          </span>
-          <span className="mt-1 font-mono text-[0.5rem] uppercase tracking-[0.24em] text-muted">
-            World of knowledge
-          </span>
+        <span className="font-serif text-[1.06rem] font-semibold leading-none tracking-[0.14em] text-heading">
+          NEXORA
         </span>
       )}
     </Link>
@@ -93,7 +88,7 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
       <div className="px-3 pt-2">
         <Link
           to="/settings"
-          className="flex items-center justify-between border border-railfg/20 px-3 py-2 text-xs text-railfg/60 transition-colors hover:border-accent/70 hover:text-accent"
+          className="flex items-center justify-between border border-line px-3 py-2 text-xs text-muted transition-colors hover:border-accent/70 hover:text-accent"
           onClick={onNavigate}
         >
           <span>Notifications</span>
