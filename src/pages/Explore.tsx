@@ -389,6 +389,10 @@ function TopicExplorer({
                 alt=""
                 loading="lazy"
                 className="h-32 w-full object-cover sm:w-48"
+                onError={(event) => {
+                  const frame = event.currentTarget;
+                  frame.style.display = 'none';
+                }}
               />
             )}
             <div className="min-w-0">

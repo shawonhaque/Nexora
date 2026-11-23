@@ -1,13 +1,17 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { BookRow, CategoryRow, IdeaRow, PostRow, StudyResourceRow, BookmarkRow } from '../../lib/database.types';
 import { formatDate, readingLabel, safeUrl, truncate } from '../../lib/format';
 
-/** Deterministic gradient placeholder so cards look intentional without images. */
+/**
+ * Cover art for a record. Wide art (wordmarks, banners) is dropped rather than
+ * cropped, and a missing image falls back to a typeset plate — initials on
+ * paper stock — so the grid never shows a hole or a sliced-up logo.
+ */
 function Cover({ url, label, ratio = 'aspect-[16/10]' }: { url: string | null; label: string; ratio?: string }) {
   const src = safeUrl(url);
-  const seed = label.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  const hue = seed % 360;
-  if (src) {
+  const [wideArt, setWideArt] = useState(false);
+  if (src && !wideArt) {
     return (
       <div className={`${ratio} overflow-hidden bg-elevated`}>
         <img
@@ -15,19 +19,19 @@ function Cover({ url, label, ratio = 'aspect-[16/10]' }: { url: string | null; l
           alt=""
           loading="lazy"
           decoding="async"
-          className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]"
+          className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.02]"
+          onLoad={(event) => {
+            const { naturalWidth, naturalHeight } = event.currentTarget;
+            if (naturalHeight > 0 && naturalWidth / naturalHeight > 2.2) setWideArt(true);
+          }}
         />
       </div>
     );
   }
   return (
-    <div
-      className={`${ratio} flex items-center justify-center bg-elevated`}
-      style={{ backgroundImage: `linear-gradient(135deg, hsl(${hue} 62% 26% / 0.55), hsl(${(hue + 48) % 360} 58% 20% / 0.55))` }}
-      aria-hidden="true"
-    >
-      <span className="font-mono text-[0.7rem] uppercase tracking-[0.2em] text-white/70">
-        {label.split(/\s+/).slice(0, 2).join(' ')}
+    <div className={`${ratio} flex items-center justify-center border-b border-line bg-elevated`} aria-hidden="true">
+      <span className="font-serif text-3xl font-bold text-muted/40">
+        {label.split(/\s+/).slice(0, 2).map((word) => word[0]).join('')}
       </span>
     </div>
   );

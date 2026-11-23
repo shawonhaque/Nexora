@@ -215,16 +215,34 @@ function splitEntries(xml) {
   return [...xml.matchAll(/<entry(?:\s[^>]*)?>([\s\S]*?)<\/entry>/gi)].map((m) => m[1]);
 }
 
+/**
+ * Some publishers put their masthead in the feed instead of a photo. Those are
+ * wide, transparent wordmarks, and cropping one into a 16:9 card frame cuts
+ * the middle out of the name ("PUNCH" renders as "UNCI"). Reject them by URL
+ * and let the card fall back to its text-only shape.
+ */
+const LOGO_URL = /(?:^|[/_-])(?:logo|wordmark|masthead|favicon|site-?icon|brandmark|placeholder|default-image)(?:[/_.-]|$)/i;
+
+function isLogoUrl(url) {
+  try {
+    const { pathname } = new URL(url);
+    return LOGO_URL.test(pathname);
+  } catch {
+    return false;
+  }
+}
+
 function extractImage(entry, description) {
   const media = attrValue(entry, 'media:content', 'url') || attrValue(entry, 'media:thumbnail', 'url');
-  if (media) return media;
+  if (media) return isLogoUrl(media) ? '' : media;
   const enclosure = entry.match(/<enclosure[^>]*\stype=["']image\/[^"']+["'][^>]*>/i);
   if (enclosure) {
     const url = enclosure[0].match(/\surl=["']([^"']+)["']/i);
-    if (url) return url[1];
+    if (url) return isLogoUrl(url[1]) ? '' : url[1];
   }
   const img = String(description ?? '').match(/<img[^>]*\ssrc=["']([^"']+)["']/i);
-  return img ? img[1] : '';
+  if (!img) return '';
+  return isLogoUrl(img[1]) ? '' : img[1];
 }
 
 function parseDate(value) {

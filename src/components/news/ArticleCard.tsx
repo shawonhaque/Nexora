@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { NewsArticle } from '../../lib/newsTypes';
 import { CATEGORY_META } from '../../services/newsService';
@@ -98,8 +99,12 @@ export function ArticleCard({
   const { isSaved, saveArticle, unsaveArticle, recordView } = usePersonalization();
   const saved = isSaved(article.id);
   const image = safeUrl(article.image);
-  const showImage = Boolean(image) && variant !== 'text';
   const isFeatured = variant === 'featured';
+  // A wordmark or banner is much wider than a photograph. Cropping one into a
+  // 16:9 frame eats the middle of the name, so wide art is dropped entirely and
+  // the card falls back to its text shape.
+  const [wideArt, setWideArt] = useState(false);
+  const showImage = Boolean(image) && variant !== 'text' && !wideArt;
 
   function toggleSave(event: React.MouseEvent) {
     event.preventDefault();
@@ -149,6 +154,10 @@ export function ArticleCard({
             loading="lazy"
             decoding="async"
             className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.02]"
+            onLoad={(event) => {
+              const { naturalWidth, naturalHeight } = event.currentTarget;
+              if (naturalHeight > 0 && naturalWidth / naturalHeight > 2.2) setWideArt(true);
+            }}
             onError={(event) => {
               // Publisher images occasionally 404; drop the frame rather than
               // leaving a broken-image icon in the layout.
