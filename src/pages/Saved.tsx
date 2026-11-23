@@ -34,8 +34,8 @@ export default function Saved() {
 
         {!saved.length ? (
           <EmptyState
-            title="No saved articles yet"
-            message="Use the bookmark button on any article card to keep it here."
+            title="Nothing kept yet"
+            message="This shelf is empty. Tap the bookmark on any article and it will wait here for you — no account required."
             action={
               <Link to="/explore" className="btn-primary mt-2">
                 <Icon name="compass" className="h-4 w-4" /> Browse articles
@@ -47,7 +47,7 @@ export default function Saved() {
             <SubHeading title={`${saved.length} saved`} hint="Newest first." />
             <ul className="space-y-3">
               {saved.map((item) => (
-                <li key={item.id} className="glass glass-hover flex flex-col gap-3 p-4 sm:flex-row sm:items-start">
+                <li key={item.id} className="flex flex-col gap-3 border-b border-line py-3.5 sm:flex-row sm:items-start">
                   <div className="min-w-0 flex-1">
                     <div className="mb-1.5 flex flex-wrap items-center gap-2">
                       <Link to={CATEGORY_META[item.category].path} className="chip-accent">

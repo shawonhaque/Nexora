@@ -58,7 +58,7 @@ export function TopBar({ onOpenMenu }: { onOpenMenu: () => void }) {
   }
 
   return (
-    <header className="no-print sticky top-0 z-40 border-b border-line bg-bg/85 backdrop-blur-xl">
+    <header className="no-print sticky top-0 z-40 border-b border-line bg-bg">
       <div className="flex h-16 items-center gap-3 px-4 sm:px-6">
         <button
           type="button"
@@ -88,7 +88,7 @@ export function TopBar({ onOpenMenu }: { onOpenMenu: () => void }) {
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Search news, topics and ideas…"
-              className="field !pl-9"
+              className="field !py-2 !pl-9 text-[0.82rem]"
             />
           </div>
         </form>
@@ -117,7 +117,7 @@ export function TopBar({ onOpenMenu }: { onOpenMenu: () => void }) {
           >
             <Icon name="bell" className="h-[17px] w-[17px]" />
             {unread > 0 && (
-              <span className="absolute -right-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-accent px-1 font-mono text-[0.58rem] text-white">
+              <span className="absolute -right-1 -top-1 grid h-4 min-w-4 place-items-center bg-accent px-1 font-mono text-[0.58rem] text-white">
                 {unread > 9 ? '9+' : unread}
               </span>
             )}
@@ -131,7 +131,7 @@ export function TopBar({ onOpenMenu }: { onOpenMenu: () => void }) {
                   setMenuOpen((value) => !value);
                   if (!menuOpen && unread) markAllRead();
                 }}
-                className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-accent to-accent2 text-xs font-bold text-white"
+                className="grid h-9 w-9 place-items-center border border-heading bg-heading font-mono text-xs font-semibold text-bg"
                 aria-expanded={menuOpen}
                 aria-haspopup="menu"
                 aria-label="Account menu"
@@ -141,7 +141,7 @@ export function TopBar({ onOpenMenu }: { onOpenMenu: () => void }) {
               {menuOpen && (
                 <div
                   role="menu"
-                  className="glass absolute right-0 mt-2 w-56 p-2 text-sm"
+                  className="absolute right-0 mt-2 w-56 border border-line bg-surface p-2 text-sm shadow-lift"
                 >
                   <p className="truncate px-3 py-2 text-xs text-muted">{user.email}</p>
                   <Link to="/profile" role="menuitem" className="side-link !py-2">
@@ -196,7 +196,7 @@ export function MobileDrawer({ open, onClose }: { open: boolean; onClose: () => 
   return (
     <div className="no-print fixed inset-0 z-50 lg:hidden">
       <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/55"
         onClick={onClose}
         aria-hidden="true"
       />
@@ -204,7 +204,7 @@ export function MobileDrawer({ open, onClose }: { open: boolean; onClose: () => 
         role="dialog"
         aria-modal="true"
         aria-label="Navigation"
-        className="absolute left-0 top-0 h-full w-[290px] overflow-y-auto border-r border-line bg-surface p-4 scrollbar-thin"
+        className="rail absolute left-0 top-0 h-full w-[290px] overflow-y-auto p-4 scrollbar-thin"
       >
         <div className="mb-6 flex items-center justify-between">
           <Brand />

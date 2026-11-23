@@ -131,7 +131,7 @@ export default function CategoryPage({ category }: { category: NewsCategory }) {
 
         {!loading && !error && !visible.length && (
           <EmptyState
-            title="No articles match this filter"
+            title="Nothing on this desk right now"
             message={
               sourceFilter === 'all'
                 ? 'This feed returned no articles. Try refreshing, or check the source directly.'

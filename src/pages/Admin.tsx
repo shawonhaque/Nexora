@@ -167,8 +167,8 @@ export default function Admin() {
                     to={item.to}
                     end={item.end}
                     className={({ isActive }) =>
-                      `block rounded-lg px-3 py-2 text-sm font-medium transition ${
-                        isActive ? 'bg-elevated text-accent' : 'text-muted hover:bg-elevated hover:text-heading'
+                      `block border-l-2 px-3 py-2 text-sm font-medium transition-colors ${
+                        isActive ? 'bg-heading text-bg' : 'text-muted hover:bg-elevated hover:text-heading'
                       }`
                     }
                   >
@@ -199,9 +199,9 @@ export default function Admin() {
                   <Link
                     key={action.to}
                     to={action.to}
-                    className="glass glass-hover flex items-start gap-3 p-4"
+                    className="flex items-start gap-3 border-b border-line py-3.5"
                   >
-                    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-accent/12 text-accent">
+                    <span className="grid h-9 w-9 shrink-0 place-items-center border border-line text-accent">
                       <Icon name={action.icon} className="h-[18px] w-[18px]" />
                     </span>
                     <span className="min-w-0">

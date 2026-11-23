@@ -64,7 +64,7 @@ export default function Settings() {
                   aria-pressed={followed}
                   className={`inline-flex items-center gap-2 rounded-xl border px-3.5 py-2.5 text-sm font-medium transition ${
                     followed
-                      ? 'border-accent bg-accent/12 text-accent'
+                      ? 'border-heading bg-heading text-bg'
                       : 'border-line text-muted hover:border-accent/50 hover:text-accent'
                   }`}
                 >
@@ -93,7 +93,7 @@ export default function Settings() {
                 aria-pressed={theme === option}
                 className={`inline-flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-medium capitalize transition ${
                   theme === option
-                    ? 'border-accent bg-accent/12 text-accent'
+                    ? 'border-heading bg-heading text-bg'
                     : 'border-line text-muted hover:border-accent/50 hover:text-accent'
                 }`}
               >
@@ -132,7 +132,7 @@ export default function Settings() {
               {notifications.map((item) => (
                 <li
                   key={item.id}
-                  className={`glass flex items-start gap-3 p-4 ${item.read ? '' : 'border-accent/40'}`}
+                  className={`flex items-start gap-3 border-b border-line py-3.5 ${item.read ? '' : 'border-l-2 border-l-accent pl-3'}`}
                 >
                   <span
                     className={`mt-1 h-2 w-2 shrink-0 rounded-full ${item.read ? 'bg-line' : 'bg-accent'}`}
@@ -159,7 +159,7 @@ export default function Settings() {
               ))}
             </ul>
           ) : (
-            <p className="glass px-4 py-6 text-sm text-muted">
+            <p className="border-t border-line py-6 text-sm text-muted">
               No notifications yet. New content alerts will appear here.
             </p>
           )}
@@ -172,7 +172,7 @@ export default function Settings() {
             title="Stored data"
             hint="What NEXORA keeps about your reading, and how to remove it."
           />
-          <div className="glass divide-y divide-line/70">
+          <div className="border-t border-line">
             <div className="flex flex-wrap items-center justify-between gap-3 p-4">
               <div>
                 <p className="text-sm font-medium text-heading">Saved articles</p>
@@ -215,7 +215,7 @@ export default function Settings() {
         {/* ---------------------------------------------------------- account */}
         <section aria-labelledby="account-heading">
           <SubHeading id="account-heading" title="Account" hint="Backend and session status." />
-          <div className="glass space-y-3 p-4 text-sm">
+          <div className="space-y-3 border border-line bg-surface p-4 text-sm">
             <p className="flex flex-wrap items-center gap-2">
               <span className="text-muted">Backend:</span>
               <span className={backendConfigured ? 'text-accent' : 'text-amber-500'}>

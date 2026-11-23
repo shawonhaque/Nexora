@@ -4,18 +4,36 @@ import { NAV_GROUPS } from './nav';
 import { usePersonalization } from '../../hooks/usePersonalization';
 import { useAuth } from '../../context/AuthContext';
 
+/** Brand mark: a letterpress "N" in a hairline frame, drawn inline so it
+ *  inherits the current ink colour and needs no asset request. */
+export function BrandMark({ className = 'h-9 w-9' }: { className?: string }) {
+  return (
+    <span
+      aria-hidden="true"
+      className={`brand-mark grid shrink-0 place-items-center border border-accent/60 bg-heading text-bg ${className}`}
+    >
+      <svg viewBox="0 0 64 64" className="h-[62%] w-[62%]" fill="none" aria-hidden="true">
+        <path d="M20 45V20h3.6l14.2 18.1V20H45v25h-3.6L27.2 26.9V45H20Z" fill="currentColor" />
+        <rect x="20" y="49" width="24" height="2.5" fill="rgb(var(--c-accent))" />
+      </svg>
+    </span>
+  );
+}
+
 /** Brand lockup used in the sidebar and the mobile bar. */
 export function Brand({ compact = false }: { compact?: boolean }) {
   return (
     <Link to="/" className="group flex items-center gap-2.5" aria-label="NEXORA home">
-      <span
-        aria-hidden="true"
-        className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-accent to-accent2 text-white shadow-card"
-      >
-        <Icon name="sparkle" className="h-[18px] w-[18px]" />
-      </span>
+      <BrandMark />
       {!compact && (
-        <span className="text-[0.95rem] font-bold tracking-[0.18em] text-heading">NEXORA</span>
+        <span className="flex flex-col leading-none">
+          <span className="font-serif text-[1.06rem] font-semibold tracking-[0.14em] text-heading">
+            NEXORA
+          </span>
+          <span className="mt-1 font-mono text-[0.5rem] uppercase tracking-[0.24em] text-muted">
+            World of knowledge
+          </span>
+        </span>
       )}
     </Link>
   );
@@ -40,9 +58,7 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
     <nav aria-label="Main" className="flex flex-col gap-6">
       {NAV_GROUPS.map((group) => (
         <div key={group.title}>
-          <p className="mb-2 px-3 font-mono text-[0.62rem] uppercase tracking-[0.16em] text-muted/80">
-            {group.title}
-          </p>
+          <p className="kicker mb-2 px-3">{group.title}</p>
           <ul className="space-y-0.5">
             {group.items.map((item) => {
               const badge = badgeFor(item.to);
@@ -52,7 +68,7 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
                     <Icon name={item.icon} className="h-[17px] w-[17px] shrink-0" />
                     <span className="truncate">{item.label}</span>
                     {badge !== null && (
-                      <span className="ml-auto rounded-full bg-accent/15 px-1.5 py-0.5 font-mono text-[0.62rem] text-accent">
+                      <span className="ml-auto px-1.5 py-0.5 font-mono text-[0.62rem] text-accent">
                         {badge}
                       </span>
                     )}
@@ -66,9 +82,7 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
 
       {isAdmin && (
         <div>
-          <p className="mb-2 px-3 font-mono text-[0.62rem] uppercase tracking-[0.16em] text-muted/80">
-            Administration
-          </p>
+          <p className="kicker mb-2 px-3">Administration</p>
           <NavLink to="/admin" className="side-link" onClick={onNavigate}>
             <Icon name="shield" className="h-[17px] w-[17px] shrink-0" />
             <span>Admin Dashboard</span>
@@ -79,14 +93,14 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
       <div className="px-3 pt-2">
         <Link
           to="/settings"
-          className="flex items-center justify-between rounded-xl border border-line bg-elevated/50 px-3 py-2 text-xs text-muted transition hover:border-accent/40 hover:text-accent"
+          className="flex items-center justify-between border border-railfg/20 px-3 py-2 text-xs text-railfg/60 transition-colors hover:border-accent/70 hover:text-accent"
           onClick={onNavigate}
         >
           <span>Notifications</span>
           <span className="inline-flex items-center gap-1.5">
             <Icon name="bell" className="h-3.5 w-3.5" />
             {unread > 0 ? (
-              <span className="rounded-full bg-accent px-1.5 font-mono text-[0.6rem] text-white">{unread}</span>
+              <span className="bg-accent px-1.5 font-mono text-[0.6rem] text-white">{unread}</span>
             ) : (
               <span>0</span>
             )}

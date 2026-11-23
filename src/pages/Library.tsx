@@ -86,7 +86,7 @@ export default function Library() {
             <a
               key={item.id}
               href={`#${item.id}`}
-              className="inline-flex items-center gap-2 rounded-xl border border-line bg-elevated/40 px-3.5 py-2 text-sm font-medium text-muted transition hover:border-accent/50 hover:text-accent"
+              className="inline-flex items-center gap-2 border border-line bg-elevated/40 px-3.5 py-2 text-sm font-medium text-muted transition hover:border-accent/50 hover:text-accent"
             >
               <Icon name={item.icon} className="h-4 w-4" />
               {item.label}
@@ -122,7 +122,7 @@ export default function Library() {
             />
           </div>
 
-          <div className="glass p-5">
+          <div className="border border-line bg-surface p-5">
             <h3 className="text-sm font-semibold text-heading">Last 14 days</h3>
             <p className="mt-1 text-xs text-muted">
               Articles opened per day. Days with no activity are shown at zero rather than omitted.
@@ -136,7 +136,7 @@ export default function Library() {
           </div>
 
           {stats.topSources.length > 0 && (
-            <div className="glass p-5">
+            <div className="border border-line bg-surface p-5">
               <h3 className="text-sm font-semibold text-heading">Sources you read most</h3>
               <ul className="mt-3 space-y-2">
                 {stats.topSources.map((entry) => (
@@ -178,7 +178,7 @@ export default function Library() {
           ) : (
             <ul className="space-y-3">
               {saved.map((item) => (
-                <li key={item.id} className="glass glass-hover flex flex-col gap-3 p-4 sm:flex-row sm:items-start">
+                <li key={item.id} className="flex flex-col gap-3 border-b border-line py-3.5 sm:flex-row sm:items-start">
                   <div className="min-w-0 flex-1">
                     <div className="mb-1.5 flex flex-wrap items-center gap-2">
                       <Link to={CATEGORY_META[item.category].path} className="chip-accent">
@@ -242,7 +242,7 @@ export default function Library() {
               {history.slice(0, 40).map((entry) => (
                 <li
                   key={entry.articleId}
-                  className="glass flex flex-col gap-2 p-4 sm:flex-row sm:items-center sm:justify-between"
+                  className="flex flex-col gap-2 border-b border-line py-3 sm:flex-row sm:items-center sm:justify-between"
                 >
                   <div className="min-w-0">
                     <a

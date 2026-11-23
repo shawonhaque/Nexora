@@ -78,7 +78,7 @@ export default function Login() {
       <div className="wrap flex min-h-[70vh] items-center justify-center py-16">
         <div className="w-full max-w-md">
           <div className="mb-8 text-center">
-            <span className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-accent to-accent2 text-white">
+            <span className="mx-auto grid h-12 w-12 place-items-center border border-accent/60 bg-heading text-bg">
               <Icon name="sparkle" className="h-6 w-6" />
             </span>
             <h1 className="mt-5 text-2xl">Sign in to NEXORA</h1>

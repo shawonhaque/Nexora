@@ -151,7 +151,7 @@ export function SettingsPanel() {
               ) : (
                 <ul className="mt-2 space-y-2">
                   {upcoming.map((post) => (
-                    <li key={post.id} className="rounded-xl border border-line bg-elevated/40 px-3.5 py-2.5">
+                    <li key={post.id} className="border border-line bg-elevated/40 px-3.5 py-2.5">
                       <p className="text-sm font-medium text-heading">{post.title}</p>
                       <p className="mt-0.5 font-mono text-xs text-muted">
                         {post.section} · in {relativeTime(post.scheduled_at)}

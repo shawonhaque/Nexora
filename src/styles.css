@@ -5,36 +5,47 @@
 /* ---------------------------------------------------------------
    Design tokens. Values are RGB triplets so Tailwind's alpha
    modifier (<alpha-value>) works for every brand colour.
+
+   The palette is deliberately warm and low-chroma: ink on paper,
+   with terracotta as the single opinionated accent and a muted
+   brass for secondary marks. No violet, no cyan, no gradients.
    --------------------------------------------------------------- */
 @layer base {
   :root {
-    /* Light theme */
-    --c-bg: 247 249 253;
-    --c-surface: 255 255 255;
-    --c-elevated: 241 245 252;
-    --c-line: 212 220 236;
-    --c-fg: 28 33 51;
-    --c-heading: 10 15 32;
-    --c-muted: 94 106 132;
-    --c-accent: 124 58 237;   /* electric purple */
-    --c-accent2: 8 145 178;   /* cyan */
-    --c-glass: 255 255 255;
-    --c-glass-alpha: 0.72;
+    /* Light — warm cream stock, not white */
+    --c-bg: 246 241 233;
+    --c-surface: 252 249 243;
+    --c-elevated: 238 231 219;
+    --c-line: 213 203 186;
+    --c-fg: 43 38 33;
+    --c-heading: 26 23 20;
+    --c-muted: 107 98 87;
+    --c-accent: 168 74 41;    /* terracotta */
+    --c-accent2: 138 106 44;  /* muted brass */
+    /* The navigation rail is always dark, in both themes: it is the
+       heaviest surface on the page so the reading column keeps the light. */
+    --c-rail: 30 27 24;
+    --c-rail-fg: 240 234 224;
+    /* Ink that sits on top of the accent fill. In light mode the
+       terracotta is dark enough for white; in dark mode it is lifted,
+       so the ink has to flip to near-black to stay legible. */
+    --c-on-accent: 255 255 255;
   }
 
   .dark {
-    /* Deep navy — the default brand look */
-    --c-bg: 6 10 24;
-    --c-surface: 12 18 38;
-    --c-elevated: 19 27 51;
-    --c-line: 40 51 82;
-    --c-fg: 226 232 245;
-    --c-heading: 255 255 255;
-    --c-muted: 150 163 196;
-    --c-accent: 167 139 250;  /* electric purple */
-    --c-accent2: 34 211 238;  /* cyan */
-    --c-glass: 18 26 50;
-    --c-glass-alpha: 0.55;
+    /* Dark — warm charcoal, never pure black */
+    --c-bg: 26 24 22;
+    --c-surface: 33 30 27;
+    --c-elevated: 42 38 34;
+    --c-line: 62 56 50;
+    --c-fg: 231 224 214;
+    --c-heading: 248 243 235;
+    --c-muted: 156 145 132;
+    --c-accent: 214 122 84;   /* terracotta, lifted for contrast */
+    --c-accent2: 189 152 84;  /* brass */
+    --c-rail: 18 16 15;
+    --c-rail-fg: 235 228 217;
+    --c-on-accent: 26 24 22;
   }
 
   html {
@@ -43,6 +54,10 @@
 
   body {
     @apply bg-bg text-fg font-sans antialiased;
+    /* Paper grain. A single inline SVG turbulence tile, so it costs
+       one request and stays crisp at any zoom. */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='0.045'/%3E%3C/svg%3E");
+    background-attachment: fixed;
   }
 
   /* Visible, consistent focus ring for keyboard users. */
@@ -50,8 +65,21 @@
     @apply outline-none ring-2 ring-accent ring-offset-2 ring-offset-bg;
   }
 
+  /* Headings carry the serif. Body stays a neutral grotesque.
+     Weight is where the editorial contrast lives: display type is set
+     heavy and tight, running text stays light and open. */
   h1, h2, h3, h4 {
-    @apply text-heading font-semibold tracking-tight;
+    @apply font-serif font-semibold text-heading;
+    letter-spacing: -0.012em;
+  }
+
+  h1 { @apply font-bold; letter-spacing: -0.026em; }
+
+  /* Numerals in running text should not jitter. */
+  .tabular { font-variant-numeric: tabular-nums; }
+
+  ::selection {
+    background-color: rgb(var(--c-accent) / 0.22);
   }
 }
 
@@ -60,63 +88,91 @@
     @apply mx-auto w-full max-w-wrap px-5 sm:px-7 lg:px-10;
   }
 
+  /* ---- Surfaces -------------------------------------------------
+     Depth comes from hairlines and a slightly lifted paper stock,
+     not from drop shadows. Corners stay square; only deliberate
+     marks (chips, the save button) get a radius. */
+
   .card {
-    @apply rounded-2xl border border-line bg-surface shadow-card;
-  }
-
-  /* Glassmorphism panel — the primary surface for the redesigned UI. */
-  .glass {
-    background-color: rgb(var(--c-glass) / var(--c-glass-alpha));
-    @apply rounded-2xl border border-line/70 shadow-card backdrop-blur-xl;
-  }
-
-  .glass-hover {
-    @apply transition duration-300 hover:-translate-y-1 hover:border-accent/50 hover:shadow-lift;
+    @apply border border-line bg-surface;
   }
 
   .card-hover {
-    @apply transition duration-300 hover:-translate-y-1 hover:border-accent/45 hover:shadow-lift;
+    @apply transition-colors duration-200 hover:border-accent/60;
   }
 
+  /* A rule with a brass tick, used to open sections. */
+  .rule-mark {
+    @apply relative border-t border-line pt-4;
+  }
+  .rule-mark::before {
+    content: '';
+    @apply absolute -top-px left-0 h-px w-10 bg-accent;
+  }
+
+  /* ---- Type ---------------------------------------------------- */
+
+  /* Section eyebrow: mono, wide, uppercase, accent. */
+  .eyebrow {
+    @apply font-mono text-[0.68rem] uppercase tracking-[0.2em] text-accent;
+  }
+
+  /* Oversized editorial display type for feature headlines. */
+  .display {
+    @apply font-serif font-bold text-heading;
+    letter-spacing: -0.03em;
+    line-height: 0.96;
+  }
+
+  /* Small caps label used for kickers and bylines. */
+  .kicker {
+    @apply font-mono text-[0.64rem] uppercase tracking-[0.18em] text-muted;
+  }
+
+  /* ---- Controls ------------------------------------------------ */
+
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold
-           transition duration-200 disabled:cursor-not-allowed disabled:opacity-50;
+    @apply inline-flex items-center justify-center gap-2 border px-4 py-2.5 text-sm font-semibold
+           transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-50;
   }
 
   .btn-primary {
-    @apply btn text-white shadow-card;
-    background-image: linear-gradient(120deg, rgb(var(--c-accent)), rgb(var(--c-accent2)));
+    @apply btn border-accent bg-accent text-onaccent;
   }
 
   .btn-primary:hover {
-    @apply -translate-y-0.5 shadow-lift;
+    @apply border-heading bg-heading text-bg;
   }
 
   .btn-ghost {
-    @apply btn border border-line bg-surface/60 text-fg hover:border-accent/60 hover:text-accent;
+    @apply btn border-line bg-transparent text-fg;
+  }
+
+  .btn-ghost:hover {
+    @apply border-accent text-accent;
   }
 
   .btn-quiet {
-    @apply btn text-muted hover:bg-elevated hover:text-heading;
+    @apply btn border-transparent bg-transparent text-muted;
+  }
+
+  .btn-quiet:hover {
+    @apply text-heading;
   }
 
   .chip {
-    @apply inline-flex items-center rounded-lg border border-line bg-elevated px-2.5 py-1
-           font-mono text-[0.7rem] uppercase tracking-wider text-muted;
+    @apply inline-flex items-center border border-line px-2 py-0.5 font-mono text-[0.64rem]
+           uppercase tracking-[0.14em] text-muted;
   }
 
   .chip-accent {
-    @apply inline-flex items-center gap-1.5 rounded-full border border-accent/40 bg-accent/10 px-2.5 py-1
-           text-[0.72rem] font-medium text-accent;
-  }
-
-  .eyebrow {
-    @apply font-mono text-[0.72rem] uppercase tracking-[0.22em] text-accent;
+    @apply inline-flex items-center gap-1.5 border border-accent/50 px-2 py-0.5
+           font-mono text-[0.64rem] uppercase tracking-[0.14em] text-accent;
   }
 
   .field {
-    @apply w-full rounded-xl border border-line bg-surface px-3.5 py-2.5 text-sm text-fg
-           placeholder:text-muted/70 focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/30;
+    @apply w-full border border-line bg-surface px-3.5 py-2.5 text-sm text-fg
+           placeholder:text-muted/70 focus:border-accent focus:outline-none;
   }
 
   .label {
@@ -125,16 +181,47 @@
 
   /* Sidebar navigation link. */
   .side-link {
-    @apply flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition
-           text-muted hover:bg-elevated hover:text-heading;
+    @apply flex items-center gap-3 px-3 py-2.5 text-sm font-medium transition-colors
+           text-muted hover:bg-elevated/60 hover:text-heading;
   }
   .side-link[aria-current='page'] {
-    @apply bg-accent/10 text-accent;
+    @apply bg-elevated text-heading;
+  }
+
+  /* ---- Navigation rail -----------------------------------------
+     The rail is a fixed dark panel in both themes. Everything inside it
+     flips to light ink, so the page tokens do not leak in and make the
+     labels unreadable. */
+  .rail {
+    @apply border-r border-rail bg-rail text-railfg;
+  }
+  .rail .side-link {
+    @apply text-railfg/60;
+  }
+  .rail .side-link:hover {
+    @apply bg-railfg/10 text-railfg;
+  }
+  .rail .side-link[aria-current='page'] {
+    @apply bg-railfg/15 text-railfg;
+  }
+  .rail .kicker,
+  .rail .text-muted {
+    @apply text-railfg/45;
+  }
+  .rail .text-heading {
+    @apply text-railfg;
+  }
+  .rail .rule {
+    @apply border-railfg/15;
+  }
+  /* Brand mark inverts on the rail: light plate, dark letter. */
+  .rail .brand-mark {
+    @apply border-accent/70 bg-railfg text-rail;
   }
 
   /* Editorial body copy for long-form article content. */
   .prose-nexora {
-    @apply text-[1.02rem] leading-8 text-fg;
+    @apply text-[1.06rem] leading-8 text-fg;
   }
   .prose-nexora h2 { @apply mt-10 mb-3 text-2xl; }
   .prose-nexora h3 { @apply mt-8 mb-2 text-xl; }
@@ -146,35 +233,23 @@
   }
   .prose-nexora a { @apply text-accent underline underline-offset-2; }
   .prose-nexora code {
-    @apply rounded bg-elevated px-1.5 py-0.5 font-mono text-[0.85em] text-accent2;
+    @apply bg-elevated px-1.5 py-0.5 font-mono text-[0.85em] text-accent2;
   }
 }
 
 @layer utilities {
-  .bg-grid {
-    background-image:
-      linear-gradient(to right, rgb(var(--c-line) / 0.35) 1px, transparent 1px),
-      linear-gradient(to bottom, rgb(var(--c-line) / 0.35) 1px, transparent 1px);
-    background-size: 46px 46px;
+  /* Hairline rule for editorial lists. */
+  .rule {
+    @apply border-t border-line;
   }
-  .bg-brand-glow {
-    background-image:
-      radial-gradient(58% 52% at 12% -4%, rgb(var(--c-accent) / 0.26), transparent 62%),
-      radial-gradient(52% 50% at 90% 4%, rgb(var(--c-accent2) / 0.22), transparent 60%);
-  }
-  .text-gradient {
-    background-image: linear-gradient(115deg, rgb(var(--c-accent)), rgb(var(--c-accent2)));
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-  }
+
   .scrollbar-thin::-webkit-scrollbar { height: 8px; width: 8px; }
   .scrollbar-thin::-webkit-scrollbar-thumb {
-    @apply rounded-full bg-line;
+    @apply bg-line;
   }
   /* Skeleton shimmer for loading states. */
   .skeleton {
-    @apply relative overflow-hidden rounded-lg bg-elevated;
+    @apply relative overflow-hidden bg-elevated;
   }
   .skeleton::after {
     content: '';

@@ -30,85 +30,72 @@ import type {
 
 export const CATEGORY_META: Record<
   NewsCategory,
-  { label: string; path: string; blurb: string; accent: string }
+  { label: string; path: string; blurb: string }
 > = {
   breaking: {
     label: 'Front Page',
     path: '/breaking',
     blurb: 'The front pages of major publishers, as they publish. Not every item here is a developing story.',
-    accent: 'from-red-500/20 to-orange-500/10',
   },
   world: {
     label: 'World News',
     path: '/world',
     blurb: 'Reporting from international publishers, updated as they publish.',
-    accent: 'from-sky-500/20 to-cyan-500/10',
   },
   politics: {
     label: 'Politics & Government',
     path: '/politics',
     blurb: 'Parliaments, elections, policy and the people who set them.',
-    accent: 'from-indigo-500/20 to-blue-500/10',
   },
   technology: {
     label: 'Technology',
     path: '/technology',
     blurb: 'Product, platform and infrastructure coverage.',
-    accent: 'from-violet-500/20 to-fuchsia-500/10',
   },
   ai: {
     label: 'Artificial Intelligence',
     path: '/ai',
     blurb: 'Model releases, research and industry reporting.',
-    accent: 'from-fuchsia-500/20 to-purple-500/10',
   },
   science: {
     label: 'Science & Research',
     path: '/science',
     blurb: 'Research findings and discoveries from peer-reviewed sources.',
-    accent: 'from-emerald-500/20 to-teal-500/10',
   },
   education: {
     label: 'Education & Jobs',
     path: '/education',
     blurb: 'Schools, universities, recruitment and learning policy.',
-    accent: 'from-amber-500/20 to-orange-500/10',
   },
   business: {
     label: 'Business & Economy',
     path: '/business',
     blurb: 'Markets, enterprise and innovation.',
-    accent: 'from-rose-500/20 to-pink-500/10',
   },
   sports: {
     label: 'Sports & Football',
     path: '/sports',
     blurb: 'Football, cricket and the rest of the sporting week.',
-    accent: 'from-lime-500/20 to-green-500/10',
   },
   health: {
     label: 'Health & Lifestyle',
     path: '/health',
     blurb: 'Public health, medicine and living well.',
-    accent: 'from-teal-500/20 to-cyan-500/10',
   },
   environment: {
     label: 'Environment & Climate',
     path: '/environment',
     blurb: 'Climate, conservation and the changing planet.',
-    accent: 'from-green-500/20 to-emerald-500/10',
   },
   entertainment: {
     label: 'Entertainment & Movies',
     path: '/entertainment',
     blurb: 'Film, television, music and culture.',
-    accent: 'from-purple-500/20 to-pink-500/10',
   },
   space: {
     label: 'Space & Astronomy',
     path: '/space',
     blurb: 'Missions, launches and what the sky is doing.',
-    accent: 'from-slate-500/20 to-indigo-500/10',
   },
 };
 

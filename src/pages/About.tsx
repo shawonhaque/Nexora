@@ -37,7 +37,7 @@ export default function About() {
       />
 
       <PageBody className="space-y-10">
-        <section aria-labelledby="purpose" className="glass p-6">
+        <section aria-labelledby="purpose" className="border border-line bg-surface p-6">
           <h2 id="purpose" className="text-xl font-semibold">
             What NEXORA is
           </h2>
@@ -62,7 +62,7 @@ export default function About() {
             hint="Two delivery paths, both showing real published data."
           />
           <div className="grid gap-4 lg:grid-cols-2">
-            <div className="glass p-5">
+            <div className="border border-line bg-surface p-5">
               <h3 className="flex items-center gap-2 font-semibold text-heading">
                 <Icon name="globe" className="h-4 w-4 text-accent" /> Publisher feeds
               </h3>
@@ -73,7 +73,7 @@ export default function About() {
                 second-by-second.
               </p>
             </div>
-            <div className="glass p-5">
+            <div className="border border-line bg-surface p-5">
               <h3 className="flex items-center gap-2 font-semibold text-heading">
                 <Icon name="refresh" className="h-4 w-4 text-accent2" /> Live APIs
               </h3>
@@ -88,7 +88,7 @@ export default function About() {
 
         <section aria-labelledby="sources">
           <SubHeading id="sources" title="Sources" hint="Every publisher and API currently used." />
-          <div className="glass divide-y divide-line/70">
+          <div className="border-t border-line">
             {SOURCES.map((source) => (
               <div key={source.name} className="flex flex-wrap items-baseline gap-x-3 gap-y-1 p-3.5 text-sm">
                 <span className="font-medium text-heading">{source.name}</span>
@@ -127,7 +127,7 @@ export default function About() {
                 text: 'Search does not call a language model, because that would require an API key, and an API key cannot be kept secret in a static front-end. The interface says so rather than implying otherwise.',
               },
             ].map((item) => (
-              <li key={item.text} className="glass flex gap-3 p-4 text-sm leading-relaxed">
+              <li key={item.text} className="flex gap-3 border-l-2 border-accent/60 bg-surface px-4 py-3 text-sm leading-relaxed">
                 <Icon
                   name={item.ok ? 'check' : 'close'}
                   className={`mt-0.5 h-4 w-4 shrink-0 ${item.ok ? 'text-emerald-400' : 'text-amber-400'}`}
@@ -140,21 +140,23 @@ export default function About() {
 
         <section aria-labelledby="topics-covered">
           <SubHeading id="topics-covered" title="Topics covered" />
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid border-t border-line sm:grid-cols-2 lg:grid-cols-3">
             {NEWS_CATEGORIES.map((category) => (
               <Link
                 key={category}
                 to={CATEGORY_META[category].path}
-                className={`glass glass-hover bg-gradient-to-br p-4 ${CATEGORY_META[category].accent}`}
+                className="group border-b border-line px-1 py-4 transition-colors hover:text-accent sm:odd:border-r sm:odd:pr-5 sm:even:pl-5 lg:[&:nth-child(3n+1)]:pr-5 lg:[&:nth-child(3n+2)]:px-5 lg:[&:nth-child(3n)]:pl-5"
               >
-                <p className="font-semibold text-heading">{CATEGORY_META[category].label}</p>
-                <p className="mt-1 text-xs leading-relaxed text-muted">{CATEGORY_META[category].blurb}</p>
+                <p className="font-serif text-[1.02rem] text-heading transition-colors group-hover:text-accent">
+                  {CATEGORY_META[category].label}
+                </p>
+                <p className="mt-1.5 text-xs leading-relaxed text-muted">{CATEGORY_META[category].blurb}</p>
               </Link>
             ))}
           </div>
         </section>
 
-        <section aria-labelledby="technical" className="glass p-6">
+        <section aria-labelledby="technical" className="border border-line bg-surface p-6">
           <h2 id="technical" className="text-xl font-semibold">
             How it is built
           </h2>

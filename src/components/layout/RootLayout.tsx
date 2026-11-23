@@ -17,6 +17,11 @@ function ScrollToTop() {
  * Application shell: a fixed navigation rail on large screens, a slide-over
  * drawer below that, and a persistent top bar. The main column holds the
  * routed page.
+ *
+ * The rail is deliberately the darkest surface on the page in both themes, so
+ * the reading column keeps the light. It uses the dedicated `rail` tokens
+ * instead of the page tokens; `.rail` in styles.css re-scopes everything
+ * inside it.
  */
 export function RootLayout() {
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -25,15 +30,15 @@ export function RootLayout() {
     <div className="flex min-h-screen bg-bg">
       <a
         href="#main"
-        className="no-print sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[60] focus:rounded-lg focus:bg-accent focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white"
+        className="no-print sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[60] focus:border focus:border-accent focus:bg-surface focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-heading"
       >
         Skip to content
       </a>
       <ScrollToTop />
 
       {/* Desktop navigation rail */}
-      <aside className="no-print sticky top-0 hidden h-screen w-[264px] shrink-0 overflow-y-auto border-r border-line bg-surface/40 px-4 py-5 scrollbar-thin lg:block">
-        <div className="mb-7 px-1">
+      <aside className="rail no-print sticky top-0 hidden h-screen w-[248px] shrink-0 overflow-y-auto px-3 py-5 scrollbar-thin lg:block">
+        <div className="rule mb-7 px-2 pb-5">
           <Brand />
         </div>
         <SidebarNav />

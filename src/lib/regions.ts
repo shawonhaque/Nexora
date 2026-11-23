@@ -28,8 +28,6 @@ export interface Continent {
   blurb: string;
   /** Countries with a dedicated feed in this continent, in display order. */
   countries: string[];
-  /** Tailwind gradient used by the map cards. */
-  accent: string;
   /** Emoji used as a lightweight visual marker. */
   glyph: string;
 }
@@ -41,7 +39,6 @@ export const CONTINENTS: Continent[] = [
     short: 'Asia',
     blurb: 'Bangladesh, India, Pakistan, China, Japan and the Gulf, from their own newsrooms.',
     countries: ['Bangladesh', 'India', 'Pakistan', 'China', 'Japan', 'Saudi Arabia'],
-    accent: 'from-amber-500/20 to-orange-500/10',
     glyph: '🌏',
   },
   {
@@ -50,7 +47,6 @@ export const CONTINENTS: Continent[] = [
     short: 'Europe',
     blurb: 'UK, Germany, France, Italy and Russia, reported from inside the continent.',
     countries: ['United Kingdom', 'Germany', 'France', 'Italy', 'Russia'],
-    accent: 'from-sky-500/20 to-blue-500/10',
     glyph: '🌍',
   },
   {
@@ -59,7 +55,6 @@ export const CONTINENTS: Continent[] = [
     short: 'Africa',
     blurb: 'Egypt, Nigeria, South Africa, Kenya and Ghana across the continent.',
     countries: ['Egypt', 'Nigeria', 'South Africa', 'Kenya', 'Ghana'],
-    accent: 'from-emerald-500/20 to-teal-500/10',
     glyph: '🌍',
   },
   {
@@ -68,7 +63,6 @@ export const CONTINENTS: Continent[] = [
     short: 'N. America',
     blurb: 'USA, Canada and Mexico, from national and regional publishers.',
     countries: ['United States', 'Canada', 'Mexico'],
-    accent: 'from-rose-500/20 to-pink-500/10',
     glyph: '🌎',
   },
   {
@@ -77,7 +71,6 @@ export const CONTINENTS: Continent[] = [
     short: 'S. America',
     blurb: 'Brazil, Argentina, Colombia, Chile and Peru, in their own coverage.',
     countries: ['Brazil', 'Argentina', 'Colombia', 'Chile', 'Peru'],
-    accent: 'from-lime-500/20 to-green-500/10',
     glyph: '🌎',
   },
   {
@@ -86,7 +79,6 @@ export const CONTINENTS: Continent[] = [
     short: 'Oceania',
     blurb: 'Australia, New Zealand and the Pacific, from public broadcasters and papers.',
     countries: ['Australia', 'New Zealand'],
-    accent: 'from-cyan-500/20 to-sky-500/10',
     glyph: '🌏',
   },
   {
@@ -95,7 +87,6 @@ export const CONTINENTS: Continent[] = [
     short: 'Antarctica',
     blurb: 'Research, ice and logistics reporting from the national Antarctic programmes.',
     countries: ['Antarctica'],
-    accent: 'from-slate-400/20 to-slate-500/10',
     glyph: '🧊',
   },
 ];
@@ -111,7 +102,6 @@ export const BANGLADESH_SECTION = {
   id: 'bangladesh' as const,
   name: 'Bangladesh',
   blurb: 'Politics, Dhaka, education and jobs, cricket, the economy, expatriates and weather.',
-  accent: 'from-emerald-500/20 to-red-500/10',
   glyph: '🇧🇩',
 };
 

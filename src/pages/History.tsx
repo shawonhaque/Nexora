@@ -65,8 +65,8 @@ export default function History() {
 
         {!history.length ? (
           <EmptyState
-            title="No reading history yet"
-            message="Articles you open from NEXORA appear here so you can find them again."
+            title="Nothing read yet"
+            message="Every article you open leaves a mark here, so you can always find your way back to it."
             action={
               <Link to="/explore" className="btn-primary mt-2">
                 <Icon name="compass" className="h-4 w-4" /> Start reading
@@ -101,7 +101,7 @@ export default function History() {
                   {entries.map((entry) => (
                     <li
                       key={entry.articleId}
-                      className="glass flex flex-col gap-2 p-4 sm:flex-row sm:items-center sm:justify-between"
+                      className="flex flex-col gap-2 border-b border-line py-3 sm:flex-row sm:items-center sm:justify-between"
                     >
                       <div className="min-w-0">
                         <a

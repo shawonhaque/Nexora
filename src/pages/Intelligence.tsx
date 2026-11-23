@@ -140,7 +140,7 @@ export default function Intelligence() {
             </section>
 
             {/* ------------------------------------------------ daily briefing */}
-            <section aria-labelledby="briefing-heading" className="glass p-5 sm:p-7">
+            <section aria-labelledby="briefing-heading" className="border border-line bg-surface p-5 sm:p-7">
               <SubHeading
                 id="briefing-heading"
                 title="Daily briefing"
@@ -218,20 +218,20 @@ export default function Intelligence() {
                 hint="Stories that several newsrooms covered in the same words, grouped so you can read how each one framed it. Grouping is word matching, not editorial judgement."
               />
               {data.comparisons.length === 0 ? (
-                <p className="glass px-4 py-6 text-sm text-muted">
+                <p className="border-t border-line py-6 text-sm text-muted">
                   No story in the current snapshot was covered by more than one publisher. Try again after the next feed refresh.
                 </p>
               ) : (
                 <div className="space-y-4">
                   {data.comparisons.map((group) => (
-                    <article key={group.key} className="glass p-5">
+                    <article key={group.key} className="border border-line bg-surface p-5">
                       <h3 className="text-[1.02rem] font-semibold leading-snug text-heading">{group.lead.title}</h3>
                       <p className="mt-1 text-xs text-muted">
                         {group.sourceCount} publishers · {group.articles.length} articles
                       </p>
                       <ul className="mt-4 space-y-3">
                         {group.articles.map((article) => (
-                          <li key={article.id} className="rounded-lg border border-line bg-elevated/30 p-3">
+                          <li key={article.id} className="border-l border-line pl-3">
                             <p className="flex flex-wrap items-center gap-2 text-xs text-muted">
                               <span className="font-semibold text-accent">{article.source}</span>
                               {article.publishedAt && (
@@ -259,7 +259,7 @@ export default function Intelligence() {
             </section>
 
             {/* -------------------------------------------------- fact check */}
-            <section aria-labelledby="check-heading" className="glass p-5 sm:p-7">
+            <section aria-labelledby="check-heading" className="border border-line bg-surface p-5 sm:p-7">
               <SubHeading
                 id="check-heading"
                 title="Evidence finder"
@@ -284,7 +284,7 @@ export default function Intelligence() {
               {result && (
                 <div className="mt-5 space-y-4">
                   <div
-                    className={`rounded-lg border px-4 py-3 text-sm ${
+                    className={`border-l-2 px-4 py-3 text-sm ${
                       result.verdict === 'well-covered'
                         ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-200'
                         : result.verdict === 'thin'
@@ -305,7 +305,7 @@ export default function Intelligence() {
                   {result.evidence.length > 0 && (
                     <ul className="space-y-2">
                       {result.evidence.map((article) => (
-                        <li key={article.id} className="rounded-lg border border-line bg-elevated/30 p-3">
+                        <li key={article.id} className="border-l border-line pl-3">
                           <a
                             href={article.link}
                             target="_blank"
@@ -326,19 +326,19 @@ export default function Intelligence() {
               )}
             </section>
 
-            <section className="glass p-5 sm:p-6">
+            <section className="border border-line bg-surface p-5 sm:p-6">
               <SubHeading title="How these tools work" hint="No hidden model, no invented sources." />
               <ul className="grid gap-3 text-xs leading-relaxed text-muted sm:grid-cols-2">
-                <li className="rounded-lg border border-line bg-elevated/30 p-3">
+                <li className="border-l border-line pl-3">
                   <span className="font-semibold text-heading">Briefing</span> — extractive. It picks the first sentence of the stories covered by the most outlets and copies it exactly.
                 </li>
-                <li className="rounded-lg border border-line bg-elevated/30 p-3">
+                <li className="border-l border-line pl-3">
                   <span className="font-semibold text-heading">Translation</span> — a real translation service (MyMemory), called from your browser. It is rate limited, so it may ask you to try again.
                 </li>
-                <li className="rounded-lg border border-line bg-elevated/30 p-3">
+                <li className="border-l border-line pl-3">
                   <span className="font-semibold text-heading">Voice</span> — your device's own speech synthesis. Nothing is sent anywhere, and Bangla audio depends on a Bangla voice being installed.
                 </li>
-                <li className="rounded-lg border border-line bg-elevated/30 p-3">
+                <li className="border-l border-line pl-3">
                   <span className="font-semibold text-heading">Comparison &amp; evidence</span> — word matching across the snapshot. It shows you the links and lets you decide; it never asserts a verdict.
                 </li>
               </ul>

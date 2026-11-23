@@ -151,7 +151,7 @@ export default function Search() {
 
         {state === 'loading' && (
           <div className="space-y-5">
-            <div className="glass space-y-3 p-5">
+            <div className="space-y-3 border border-line bg-surface p-5">
               <div className="skeleton h-5 w-40" />
               <div className="skeleton h-4 w-full" />
               <div className="skeleton h-4 w-11/12" />
@@ -187,7 +187,7 @@ export default function Search() {
             )}
 
             {answer.summary ? (
-              <section className="glass overflow-hidden" aria-labelledby="answer-heading">
+              <section className="overflow-hidden border border-line bg-surface" aria-labelledby="answer-heading">
                 <div className="flex items-center gap-2 border-b border-line/70 bg-accent/5 px-5 py-3">
                   <Icon name="sparkle" className="h-4 w-4 text-accent" />
                   <h2 id="answer-heading" className="text-sm font-semibold text-heading">
@@ -201,7 +201,7 @@ export default function Search() {
                 <div className="p-5">
                   <p className="text-[1.02rem] leading-8 text-fg">{answer.summary}</p>
 
-                  <p className="mt-4 rounded-xl border border-line bg-elevated/40 px-4 py-3 text-xs leading-relaxed text-muted">
+                  <p className="mt-4 border border-line bg-elevated/40 px-4 py-3 text-xs leading-relaxed text-muted">
                     <strong className="font-semibold text-fg">How this was produced.</strong> These sentences are
                     quoted from the articles listed below — nothing here is generated text. Each number links to
                     its source. This is not a language-model answer.
@@ -210,7 +210,7 @@ export default function Search() {
                   <ol className="mt-5 space-y-3">
                     {answer.citations.map((citation) => (
                       <li key={citation.index} className="flex gap-3 text-sm">
-                        <span className="grid h-6 w-6 shrink-0 place-items-center rounded-lg bg-accent/12 font-mono text-xs font-bold text-accent">
+                        <span className="grid h-6 w-6 shrink-0 place-items-center border border-accent/50 font-mono text-[0.62rem] text-accent">
                           {citation.index}
                         </span>
                         <div className="min-w-0">
@@ -231,8 +231,8 @@ export default function Search() {
               </section>
             ) : (
               <EmptyState
-                title="No summary available"
-                message={`No article in the current feeds matched "${answer.query}". Try a broader term, or browse a topic feed.`}
+                title="Nothing to summarise"
+                message={`Nothing in the current feeds matched "${answer.query}". Try a broader phrase, or wander through a topic instead.`}
               />
             )}
 
@@ -251,7 +251,7 @@ export default function Search() {
                           setParams({ q: question });
                           void execute(question);
                         }}
-                        className="rounded-xl border border-line bg-elevated/40 px-3.5 py-2 text-left text-sm text-muted transition hover:border-accent/50 hover:text-accent"
+                        className="border border-line bg-elevated/40 px-3.5 py-2 text-left text-sm text-muted transition hover:border-accent/50 hover:text-accent"
                       >
                         {question}
                       </button>
@@ -274,8 +274,8 @@ export default function Search() {
                     <button
                       type="button"
                       onClick={() => setCategory('all')}
-                      className={`rounded-lg px-2.5 py-1.5 text-xs font-medium transition ${
-                        category === 'all' ? 'bg-accent/12 text-accent' : 'text-muted hover:bg-elevated'
+                      className={`px-2.5 py-1.5 font-mono text-[0.66rem] uppercase tracking-[0.1em] transition-colors ${
+                        category === 'all' ? 'bg-heading text-bg' : 'text-muted hover:bg-elevated'
                       }`}
                     >
                       All
@@ -285,8 +285,8 @@ export default function Search() {
                         key={item}
                         type="button"
                         onClick={() => setCategory(item)}
-                        className={`rounded-lg px-2.5 py-1.5 text-xs font-medium transition ${
-                          category === item ? 'bg-accent/12 text-accent' : 'text-muted hover:bg-elevated'
+                        className={`px-2.5 py-1.5 font-mono text-[0.66rem] uppercase tracking-[0.1em] transition-colors ${
+                          category === item ? 'bg-heading text-bg' : 'text-muted hover:bg-elevated'
                         }`}
                       >
                         {CATEGORY_META[item].label}
@@ -331,8 +331,8 @@ export default function Search() {
                   </>
                 ) : (
                   <EmptyState
-                    title="No results in this topic"
-                    message="This search matched nothing in the selected topic. Choose another topic or clear the filter."
+                    title="Empty in this section"
+                    message="The search matched nothing inside this topic. Widen the topic, or drop the filter and try the whole desk."
                   />
                 )}
               </section>
@@ -341,7 +341,7 @@ export default function Search() {
         )}
 
         {state === 'idle' && (
-          <section aria-label="Search help" className="glass p-5">
+          <section aria-label="Search help" className="border border-line bg-surface p-5">
             <h2 className="text-base font-semibold">What you can search</h2>
             <ul className="mt-3 space-y-2 text-sm leading-relaxed text-muted">
               <li className="flex gap-2">

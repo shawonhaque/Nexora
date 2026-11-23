@@ -108,9 +108,9 @@ export default function Bangladesh() {
                   type="button"
                   onClick={() => setDesk('all')}
                   aria-pressed={desk === 'all'}
-                  className={`rounded-full border px-3.5 py-1.5 text-xs font-medium transition ${
+                  className={`border px-3 py-1.5 font-mono text-[0.66rem] uppercase tracking-[0.12em] transition ${
                     desk === 'all'
-                      ? 'border-accent bg-accent/15 text-accent'
+                      ? 'border-heading bg-heading text-bg'
                       : 'border-line bg-elevated/40 text-muted hover:border-accent/50 hover:text-accent'
                   }`}
                 >
@@ -123,9 +123,9 @@ export default function Bangladesh() {
                     type="button"
                     onClick={() => setDesk(entry.id)}
                     aria-pressed={desk === entry.id}
-                    className={`rounded-full border px-3.5 py-1.5 text-xs font-medium transition ${
+                    className={`border px-3 py-1.5 font-mono text-[0.66rem] uppercase tracking-[0.12em] transition ${
                       desk === entry.id
-                        ? 'border-accent bg-accent/15 text-accent'
+                        ? 'border-heading bg-heading text-bg'
                         : 'border-line bg-elevated/40 text-muted hover:border-accent/50 hover:text-accent'
                     }`}
                   >
@@ -169,7 +169,7 @@ export default function Bangladesh() {
               )}
             </section>
 
-            <section aria-labelledby="desk-notes-heading" className="glass p-5 sm:p-6">
+            <section aria-labelledby="desk-notes-heading" className="border border-line bg-surface p-5 sm:p-6">
               <SubHeading
                 id="desk-notes-heading"
                 title="What each desk covers"
@@ -177,7 +177,7 @@ export default function Bangladesh() {
               />
               <dl className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {BANGLADESH_DESKS.map((entry) => (
-                  <div key={entry.id} className="rounded-xl border border-line bg-elevated/30 p-4">
+                  <div key={entry.id} className="border border-line bg-elevated/30 p-4">
                     <dt className="flex items-center justify-between gap-2 text-sm font-semibold text-heading">
                       {entry.label}
                       <span className={`font-mono text-xs ${deskCounts[entry.id] ? 'text-accent' : 'text-muted'}`}>

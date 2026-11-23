@@ -67,24 +67,23 @@ export function Pagination({
   return (
     <nav
       ref={navRef}
-      className={`mt-10 flex flex-col items-center gap-4 ${className}`}
+      className={`mt-10 flex flex-col gap-3 border-t border-line pt-4 sm:flex-row sm:items-center sm:justify-between ${className}`}
       aria-label="Pagination"
     >
-      <p className="font-mono text-xs text-muted">
+      <p className="tabular font-mono text-[0.68rem] uppercase tracking-[0.12em] text-muted">
         {`Showing ${first}–${last} of ${totalItems} ${noun}`}
       </p>
 
       {totalPages > 1 && (
-        <div className="flex flex-wrap items-center justify-center gap-1.5">
+        <div className="flex flex-wrap items-center gap-1">
           <button
             type="button"
-            className="btn-ghost !px-3 !py-2 text-xs"
+            className="border border-line px-2.5 py-1.5 font-mono text-[0.66rem] uppercase tracking-[0.1em] text-muted transition-colors hover:border-accent hover:text-accent disabled:pointer-events-none disabled:opacity-40"
             onClick={() => goTo(safePage - 1)}
             disabled={safePage === 1}
             aria-label="Previous page"
           >
-            <Icon name="chevron-left" className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">Previous</span>
+            <Icon name="chevron-left" className="h-3 w-3" />
           </button>
 
           {items.map((item, index) =>
@@ -101,8 +100,8 @@ export function Pagination({
                 aria-label={`Page ${item}`}
                 className={
                   item === safePage
-                    ? 'min-w-9 rounded-lg border border-accent/50 bg-accent/15 px-2.5 py-2 font-mono text-xs font-bold text-accent'
-                    : 'min-w-9 rounded-lg border border-line px-2.5 py-2 font-mono text-xs text-muted transition hover:border-accent/40 hover:text-accent'
+                    ? 'tabular min-w-8 border border-heading bg-heading px-2 py-1.5 font-mono text-[0.66rem] text-bg'
+                    : 'tabular min-w-8 border border-line px-2 py-1.5 font-mono text-[0.66rem] text-muted transition-colors hover:border-accent hover:text-accent'
                 }
               >
                 {item}
@@ -112,13 +111,12 @@ export function Pagination({
 
           <button
             type="button"
-            className="btn-ghost !px-3 !py-2 text-xs"
+            className="border border-line px-2.5 py-1.5 font-mono text-[0.66rem] uppercase tracking-[0.1em] text-muted transition-colors hover:border-accent hover:text-accent disabled:pointer-events-none disabled:opacity-40"
             onClick={() => goTo(safePage + 1)}
             disabled={safePage === totalPages}
             aria-label="Next page"
           >
-            <span className="hidden sm:inline">Next</span>
-            <Icon name="chevron-right" className="h-3.5 w-3.5" />
+            <Icon name="chevron-right" className="h-3 w-3" />
           </button>
         </div>
       )}

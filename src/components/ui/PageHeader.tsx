@@ -16,20 +16,20 @@ export function PageHeader({
   actions?: ReactNode;
 }) {
   return (
-    <header className="relative overflow-hidden border-b border-line bg-brand-glow">
-      <div className="px-4 py-9 sm:px-6 sm:py-12 lg:px-8">
-        <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+    <header className="relative border-b border-line">
+      <div className="px-4 pb-8 pt-7 sm:px-6 sm:pb-10 sm:pt-9 lg:px-8">
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-2xl">
-            {eyebrow && <p className="eyebrow mb-2.5">{eyebrow}</p>}
-            <h1 className="flex items-center gap-3 text-3xl font-bold sm:text-4xl">
-              {icon && (
-                <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-accent to-accent2 text-white shadow-card">
-                  <Icon name={icon} className="h-5 w-5" />
-                </span>
-              )}
-              <span className="text-gradient">{title}</span>
-            </h1>
-            {description && <p className="mt-3.5 text-sm leading-relaxed text-muted sm:text-base">{description}</p>}
+            {eyebrow && (
+              <p className="mb-3 flex items-center gap-2.5 font-mono text-[0.66rem] uppercase tracking-[0.2em] text-muted">
+                {icon && <Icon name={icon} className="h-3.5 w-3.5 text-accent" />}
+                {eyebrow}
+              </p>
+            )}
+            <h1 className="display text-4xl sm:text-5xl lg:text-[3.4rem]">{title}</h1>
+            {description && (
+              <p className="mt-4 max-w-xl text-[0.94rem] leading-relaxed text-muted">{description}</p>
+            )}
           </div>
           {actions && <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div>}
         </div>
@@ -56,44 +56,41 @@ export function SubHeading({
   action?: ReactNode;
 }) {
   return (
-    <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+    <div className="rule-mark mb-6 flex flex-wrap items-end justify-between gap-3">
       <div>
-        <h2 id={id} className="text-xl font-semibold">{title}</h2>
-        {hint && <p className="mt-1 text-sm text-muted">{hint}</p>}
+        <h2 id={id} className="text-[1.55rem] leading-tight">{title}</h2>
+        {hint && <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-muted">{hint}</p>}
       </div>
       {action}
     </div>
   );
 }
 
-/** Compact metric card for the dashboard. */
+/**
+ * A single figure in the metric strip. These are deliberately quiet: a
+ * number, a label, no panel. The data supports the page, it is not the page.
+ */
 export function StatCard({
   label,
   value,
   hint,
   icon,
-  tone = 'accent',
 }: {
   label: string;
   value: string | number;
   hint?: string;
   icon: IconName;
+  /** Retained for call-site compatibility; the strip is single-tone. */
   tone?: 'accent' | 'accent2';
 }) {
   return (
-    <div className="glass glass-hover p-5">
-      <div className="flex items-start justify-between gap-3">
-        <p className="text-xs font-medium uppercase tracking-wider text-muted">{label}</p>
-        <span
-          className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl ${
-            tone === 'accent' ? 'bg-accent/12 text-accent' : 'bg-accent2/12 text-accent2'
-          }`}
-        >
-          <Icon name={icon} className="h-[18px] w-[18px]" />
-        </span>
+    <div className="flex items-baseline gap-3 border-l border-line pl-3">
+      <Icon name={icon} className="h-3.5 w-3.5 shrink-0 self-center text-accent" />
+      <div className="min-w-0">
+        <p className="tabular font-serif text-2xl leading-none text-heading">{value}</p>
+        <p className="mt-1.5 font-mono text-[0.6rem] uppercase tracking-[0.16em] text-muted">{label}</p>
+        {hint && <p className="mt-1 truncate text-[0.72rem] leading-snug text-muted/80" title={hint}>{hint}</p>}
       </div>
-      <p className="mt-3 text-2xl font-bold text-heading">{value}</p>
-      {hint && <p className="mt-1 text-xs leading-relaxed text-muted">{hint}</p>}
     </div>
   );
 }
@@ -114,10 +111,10 @@ export function FreshnessBar({
   note?: string;
 }) {
   return (
-    <div className="flex flex-wrap items-center gap-3 rounded-xl border border-line bg-elevated/40 px-4 py-2.5 text-xs text-muted">
+    <div className="flex flex-wrap items-center gap-3 border-y border-line py-2 text-xs text-muted">
       <span className="inline-flex items-center gap-1.5">
         <span
-          className={`h-1.5 w-1.5 rounded-full ${refreshing ? 'bg-amber-400' : 'bg-emerald-400'}`}
+          className={`h-1.5 w-1.5 ${refreshing ? 'bg-accent2' : 'bg-accent'}`}
           aria-hidden="true"
         />
         {refreshing

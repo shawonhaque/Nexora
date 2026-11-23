@@ -37,25 +37,30 @@ const FOOTER_GROUPS = [
 export function Footer() {
   const year = new Date().getFullYear();
   return (
-    <footer className="no-print mt-16 border-t border-line bg-surface/50">
+    <footer className="no-print mt-20 border-t border-line">
       <div className="px-4 py-12 sm:px-6 lg:px-8">
-        <div className="grid gap-10 md:grid-cols-[1.5fr_repeat(3,1fr)]">
+        <div className="grid gap-10 md:grid-cols-[1.6fr_repeat(3,1fr)]">
           <div>
             <Brand />
-            <p className="mt-4 max-w-xs text-sm leading-relaxed text-muted">
-              A live global information platform with intelligent search and a personal knowledge library.
+            <p className="mt-4 max-w-xs font-serif text-[0.98rem] leading-relaxed text-fg">
+              A reading room for the world. Live reporting, intelligent search, and a shelf of
+              things worth keeping.
+            </p>
+            <p className="mt-4 max-w-xs text-xs leading-relaxed text-muted">
+              Set in Fraunces and Instrument Sans. Printed on nothing.
             </p>
           </div>
 
           {FOOTER_GROUPS.map((group) => (
             <nav key={group.title} aria-label={`Footer: ${group.title}`}>
-              <h2 className="mb-4 font-mono text-[0.68rem] uppercase tracking-[0.2em] text-muted">
-                {group.title}
-              </h2>
-              <ul className="grid gap-2.5">
+              <h2 className="kicker mb-4">{group.title}</h2>
+              <ul className="grid gap-2">
                 {group.links.map((item) => (
                   <li key={item.to}>
-                    <Link to={item.to} className="text-sm text-muted transition hover:text-accent">
+                    <Link
+                      to={item.to}
+                      className="text-sm text-muted transition-colors hover:text-accent"
+                    >
                       {item.label}
                     </Link>
                   </li>
@@ -67,14 +72,14 @@ export function Footer() {
       </div>
 
       <div className="border-t border-line">
-        <div className="flex flex-col items-center justify-between gap-3 px-4 py-6 text-xs text-muted sm:flex-row sm:px-6 lg:px-8">
-          <p>© {year} NEXORA. All rights reserved.</p>
-          <p className="text-center sm:text-right">
-            Live data from public publisher feeds and APIs. NEXORA does not host or rewrite publisher content.
+        <div className="flex flex-col items-start justify-between gap-3 px-4 py-6 text-xs text-muted sm:flex-row sm:items-center sm:px-6 lg:px-8">
+          <p className="font-mono uppercase tracking-[0.12em]">© {year} NEXORA</p>
+          <p className="max-w-md leading-relaxed">
+            Headlines and summaries belong to their publishers. NEXORA links out; it does not
+            host or rewrite anyone else's reporting.
           </p>
         </div>
       </div>
     </footer>
   );
 }
-

@@ -159,25 +159,25 @@ export function WorldMap({
 /** The continent picker used under the map and on narrow screens. */
 export function ContinentGrid({ stats }: { stats: ContinentStat[] }) {
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="grid border-t border-line sm:grid-cols-2 lg:grid-cols-3">
       {CONTINENTS.map((continent) => {
         const stat = stats.find((entry) => entry.id === continent.id);
         return (
           <Link
             key={continent.id}
             to={`/continent/${continent.id}`}
-            className={`glass glass-hover group flex flex-col gap-2 bg-gradient-to-br p-5 ${continent.accent}`}
+            className="group flex flex-col gap-2 border-b border-line px-1 py-4 transition-colors hover:text-accent sm:odd:border-r sm:odd:pr-5 sm:even:pl-5 lg:[&:nth-child(3n+1)]:pr-5 lg:[&:nth-child(3n+2)]:px-5 lg:[&:nth-child(3n)]:pl-5"
           >
-            <div className="flex items-center justify-between gap-3">
-              <span className="flex items-center gap-2.5 font-semibold text-heading">
-                <span aria-hidden="true" className="text-lg">{continent.glyph}</span>
+            <div className="flex items-baseline justify-between gap-3">
+              <span className="flex items-baseline gap-2.5 font-serif text-[1.1rem] text-heading transition-colors group-hover:text-accent">
+                <span aria-hidden="true" className="text-sm opacity-60">{continent.glyph}</span>
                 {continent.name}
               </span>
-              <span className="font-mono text-sm font-bold text-accent">{stat?.articles ?? 0}</span>
+              <span className="tabular font-mono text-xs text-muted">{stat?.articles ?? 0}</span>
             </div>
             <p className="text-xs leading-relaxed text-muted">{continent.blurb}</p>
-            <p className="mt-auto flex items-center gap-1 pt-1 text-xs font-medium text-accent">
-              Open feed <Icon name="arrow-right" className="h-3.5 w-3.5 transition group-hover:translate-x-0.5" />
+            <p className="mt-auto flex items-center gap-1 pt-1 font-mono text-[0.62rem] uppercase tracking-[0.14em] text-accent">
+              Open feed <Icon name="arrow-right" className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
             </p>
           </Link>
         );

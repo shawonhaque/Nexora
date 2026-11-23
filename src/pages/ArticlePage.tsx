@@ -65,7 +65,7 @@ export default function ArticlePage() {
           <div className="h-4 w-24 animate-pulse rounded bg-elevated" />
           <div className="h-10 w-full animate-pulse rounded bg-elevated" />
           <div className="h-10 w-2/3 animate-pulse rounded bg-elevated" />
-          <div className="h-64 w-full animate-pulse rounded-2xl bg-elevated" />
+          <div className="h-64 w-full animate-pulse bg-elevated" />
         </div>
       </div>
     );
@@ -105,29 +105,34 @@ export default function ArticlePage() {
       />
 
       <article className="wrap py-12 sm:py-16">
-        <nav aria-label="Breadcrumb" className="mb-7 text-sm text-muted">
+        <nav aria-label="Breadcrumb" className="mb-8 font-mono text-[0.66rem] uppercase tracking-[0.14em] text-muted">
           <ol className="flex flex-wrap items-center gap-2">
-            <li><Link to="/" className="transition hover:text-accent">Home</Link></li>
+            <li><Link to="/" className="transition-colors hover:text-accent">Home</Link></li>
             <li aria-hidden="true">/</li>
-            <li><Link to={`/${section}`} className="transition hover:text-accent">{label}</Link></li>
+            <li><Link to={`/${section}`} className="transition-colors hover:text-accent">{label}</Link></li>
             <li aria-hidden="true">/</li>
-            <li className="truncate text-heading" aria-current="page">{post.title}</li>
+            <li className="truncate normal-case tracking-normal text-heading" aria-current="page">{post.title}</li>
           </ol>
         </nav>
 
-        <header className="mx-auto max-w-3xl">
-          <div className="mb-4 flex flex-wrap items-center gap-3 text-xs text-muted">
-            <span className="chip">{section}</span>
-            {post.is_breaking && <span className="chip border-red-500/50 text-red-500">Breaking</span>}
+        <header className="mx-auto max-w-3xl border-b border-line pb-8">
+          <div className="mb-5 flex flex-wrap items-center gap-x-3 gap-y-2 font-mono text-[0.66rem] uppercase tracking-[0.12em] text-muted">
+            <span className="text-accent">{label}</span>
+            {post.is_breaking && <span className="text-accent">Front page</span>}
             {post.published_at && (
-              <time dateTime={post.published_at}>{formatDate(post.published_at)}</time>
+              <>
+                <span aria-hidden="true" className="text-line">/</span>
+                <time dateTime={post.published_at}>{formatDate(post.published_at)}</time>
+              </>
             )}
-            <span aria-hidden="true">·</span>
+            <span aria-hidden="true" className="text-line">/</span>
             <span>{readingLabel(minutes)}</span>
           </div>
 
-          <h1 className="text-3xl leading-tight sm:text-4xl lg:text-[2.7rem]">{post.title}</h1>
-          {post.subtitle && <p className="mt-4 text-lg leading-relaxed text-muted">{post.subtitle}</p>}
+          <h1 className="display text-[2.1rem] sm:text-[2.9rem] lg:text-[3.2rem]">{post.title}</h1>
+          {post.subtitle && (
+            <p className="mt-5 font-serif text-lg leading-relaxed text-muted">{post.subtitle}</p>
+          )}
         </header>
 
         {cover && (
@@ -135,7 +140,7 @@ export default function ArticlePage() {
             <img
               src={cover}
               alt={post.image_caption ?? ''}
-              className="w-full rounded-2xl border border-line"
+              className="w-full border border-line"
               loading="eager"
               decoding="async"
             />
@@ -160,7 +165,7 @@ export default function ArticlePage() {
           )}
 
           {post.source_name && (
-            <p className="mt-8 rounded-xl border border-line bg-surface px-4 py-3 text-xs text-muted">
+            <p className="mt-8 border-t border-line pt-4 text-xs leading-relaxed text-muted">
               Source: {post.source_name}
               {safeUrl(post.source_url) && (
                 <>
@@ -174,7 +179,7 @@ export default function ArticlePage() {
           )}
 
           {post.correction_note && (
-            <p className="mt-4 rounded-xl border border-amber-500/40 bg-amber-500/5 px-4 py-3 text-xs text-amber-600 dark:text-amber-300">
+            <p className="mt-4 border-l-2 border-accent2 px-4 py-2 text-xs leading-relaxed text-muted">
               Correction: {post.correction_note}
             </p>
           )}

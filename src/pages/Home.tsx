@@ -1,7 +1,6 @@
 import { useCallback, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { ArticleCard, ArticleSkeleton, EmptyState, ErrorState, Icon } from '../components/news/ArticleCard';
-import type { IconName } from '../components/news/ArticleCard';
 import { FreshnessBar, PageBody, PageHeader, StatCard, SubHeading } from '../components/ui/PageHeader';
 import { PageMeta } from '../components/layout/PageMeta';
 import { useLiveData } from '../hooks/useLiveData';
@@ -30,22 +29,6 @@ interface DashboardData {
   generatedAt: string;
   sourceCount: number;
 }
-
-const CATEGORY_ICON: Record<NewsCategory, IconName> = {
-  breaking: 'bell',
-  world: 'globe',
-  politics: 'shield',
-  technology: 'chip',
-  ai: 'brain',
-  science: 'flask',
-  education: 'book',
-  business: 'trend',
-  sports: 'trend',
-  health: 'shield',
-  environment: 'globe',
-  entertainment: 'sparkle',
-  space: 'compass',
-};
 
 export default function Home() {
   const { interests, saved, history } = usePersonalization();
@@ -114,21 +97,20 @@ export default function Home() {
       />
 
       <PageHeader
-        eyebrow="NEXORA"
-        title="Home Dashboard"
+        eyebrow={data ? `${data.sourceCount} newsrooms · updated ${relativeTime(data.generatedAt)}` : 'The front page'}
+        title="Today"
         description={
           user
-            ? `Welcome back. Your feed reflects the ${interests.length || 'full'} topic${interests.length === 1 ? '' : 's'} you follow.`
-            : 'Live global information, intelligent search and a personal library — all in one place.'
+            ? `Welcome back. You follow ${interests.length || 'every'} topic${interests.length === 1 ? '' : 's'} — the front of the book is shaped around them.`
+            : 'Everything published across the world in the last fortnight, edited down to what is worth your morning.'
         }
-        icon="chart"
         actions={
           <div className="flex flex-wrap gap-2">
-            <Link to="/explore" className="btn-primary">
-              <Icon name="compass" className="h-4 w-4" /> Explore
+            <Link to="/explore" className="btn-ghost">
+              <Icon name="compass" className="h-4 w-4" /> Browse
             </Link>
-            <Link to="/search" className="btn-ghost">
-              <Icon name="search" className="h-4 w-4" /> Intelligent search
+            <Link to="/search" className="btn-primary">
+              <Icon name="search" className="h-4 w-4" /> Search
             </Link>
           </div>
         }
@@ -143,12 +125,13 @@ export default function Home() {
         />
 
         {loading && (
-          <div className="space-y-6">
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="space-y-8">
+            <div className="grid gap-4 border-y border-line py-4 sm:grid-cols-2 lg:grid-cols-4">
               {Array.from({ length: 4 }).map((_, index) => (
-                <div key={index} className="skeleton h-28" />
+                <div key={index} className="skeleton h-10" />
               ))}
             </div>
+            <div className="skeleton aspect-[16/7]" />
             <ArticleSkeleton count={6} />
           </div>
         )}
@@ -157,9 +140,11 @@ export default function Home() {
 
         {!loading && !error && data && (
           <>
-            {/* Metrics. Every figure is a real count from the fetched data. */}
+            {/* Metrics. Every figure is a real count from the fetched data.
+                Rendered as a quiet strip: the numbers support the page, they
+                are not the page. */}
             <section aria-label="Overview">
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="grid gap-x-6 gap-y-5 border-y border-line py-4 sm:grid-cols-2 lg:grid-cols-4">
                 <StatCard
                   label="Live articles"
                   value={totalArticles}
@@ -189,15 +174,18 @@ export default function Home() {
               </div>
             </section>
 
-            {/* Personalised feed */}
+            {/* The front of the book. One lead story carries the page, a
+                secondary column and a bare wire list fill the rest. This is
+                deliberately uneven: an even card grid reads like a dashboard,
+                a weighted column reads like an edited paper. */}
             <section aria-labelledby="feed-heading">
               <SubHeading
                 id="feed-heading"
-                title="Your feed"
+                title="The front of the book"
                 hint={
                   interests.length
-                    ? `Prioritising ${interests.map((item) => CATEGORY_META[item].label).join(', ')}`
-                    : 'The newest articles from every feed. Choose interests in Settings to personalise this.'
+                    ? `Leading with ${interests.map((item) => CATEGORY_META[item].label).join(', ')}. The rest of the wire follows.`
+                    : 'The newest reporting from every newsroom we follow, most recent first.'
                 }
                 action={
                   <Link to="/settings" className="btn-ghost !py-2 text-xs">
@@ -206,13 +194,36 @@ export default function Home() {
                 }
               />
               {feed.length ? (
-                <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-                  {feed.slice(0, 6).map((article) => (
-                    <ArticleCard key={article.id} article={article} />
-                  ))}
+                <div className="grid gap-8 lg:grid-cols-12">
+                  {/* Lead */}
+                  <div className="lg:col-span-7">
+                    <ArticleCard article={feed[0]} variant="featured" />
+                  </div>
+
+                  {/* Secondary column */}
+                  <div className="flex flex-col gap-6 lg:col-span-5">
+                    {feed.slice(1, 3).map((article) => (
+                      <ArticleCard key={article.id} article={article} />
+                    ))}
+                  </div>
+
+                  {/* The wire: no images, just headlines and sources */}
+                  {feed.length > 3 && (
+                    <div className="lg:col-span-12">
+                      <p className="kicker mb-3">Also on the wire</p>
+                      <div className="grid gap-x-8 gap-y-0 sm:grid-cols-2 xl:grid-cols-3">
+                        {feed.slice(3, 9).map((article) => (
+                          <ArticleCard key={article.id} article={article} variant="text" />
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               ) : (
-                <EmptyState title="No articles yet" message="The feed snapshot is empty. Try refreshing." />
+                <EmptyState
+                  title="Nothing on the wire"
+                  message="The snapshot came back empty. Try a refresh — the newsrooms may be between editions."
+                />
               )}
             </section>
 
@@ -229,11 +240,13 @@ export default function Home() {
                     </Link>
                   }
                 />
-                <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+                <div className="grid gap-x-8 gap-y-0 sm:grid-cols-2 xl:grid-cols-3">
                   {recommended.map((entry) => (
-                    <div key={entry.article.id} className="flex flex-col gap-2">
-                      <ArticleCard article={entry.article} />
-                      <p className="px-1 text-xs leading-relaxed text-muted">{entry.reason}</p>
+                    <div key={entry.article.id} className="flex flex-col gap-1.5 border-b border-line pb-3">
+                      <ArticleCard article={entry.article} variant="text" />
+                      <p className="font-mono text-[0.62rem] uppercase tracking-[0.12em] text-accent2">
+                        {entry.reason}
+                      </p>
                     </div>
                   ))}
                 </div>
@@ -258,10 +271,12 @@ export default function Home() {
                 }
               />
               {data.trending.length ? (
-                <ol className="glass divide-y divide-line/70">
+                <ol className="border-t border-line">
                   {data.trending.map((item, index) => (
-                    <li key={item.id} className="flex items-start gap-4 p-4">
-                      <span className="font-mono text-sm font-bold text-accent">{index + 1}</span>
+                    <li key={item.id} className="flex items-start gap-4 border-b border-line py-3">
+                      <span className="tabular w-6 shrink-0 font-mono text-xs text-accent">
+                        {String(index + 1).padStart(2, '0')}
+                      </span>
                       <div className="min-w-0 flex-1">
                         <a
                           href={item.url}
@@ -290,8 +305,8 @@ export default function Home() {
                   ))}
                 </ol>
               ) : (
-                <p className="glass px-4 py-6 text-sm text-muted">
-                  Trending data is unavailable right now. The source may be rate limiting; try refresh.
+                <p className="border-t border-line py-6 text-sm text-muted">
+                  Hacker News is not answering at the moment. It rate-limits, so this usually clears on its own.
                 </p>
               )}
             </section>
@@ -303,7 +318,7 @@ export default function Home() {
                 title="Browse by topic"
                 hint="Each topic opens its own live feed."
               />
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid border-t border-line sm:grid-cols-2 lg:grid-cols-3">
                 {NEWS_CATEGORIES.map((category) => {
                   const meta = CATEGORY_META[category];
                   const followed = interests.includes(category);
@@ -311,19 +326,19 @@ export default function Home() {
                     <Link
                       key={category}
                       to={meta.path}
-                      className={`glass glass-hover flex items-center gap-4 bg-gradient-to-br p-5 ${meta.accent}`}
+                      className="group flex items-baseline justify-between gap-4 border-b border-line px-1 py-4 transition-colors hover:text-accent sm:odd:border-r sm:odd:pr-5 sm:even:pl-5 lg:[&:nth-child(3n+1)]:pr-5 lg:[&:nth-child(3n+2)]:px-5 lg:[&:nth-child(3n)]:pl-5"
                     >
-                      <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-bg/70 text-accent">
-                        <Icon name={CATEGORY_ICON[category]} className="h-5 w-5" />
-                      </span>
                       <span className="min-w-0">
-                        <span className="flex items-center gap-2 font-semibold text-heading">
+                        <span className="flex items-center gap-2 font-serif text-[1.05rem] text-heading transition-colors group-hover:text-accent">
                           {meta.label}
-                          {followed && <Icon name="check" className="h-3.5 w-3.5 text-accent" />}
+                          {followed && <Icon name="check" className="h-3 w-3 text-accent" />}
                         </span>
-                        <span className="mt-0.5 block font-mono text-xs text-muted">
-                          {data.counts[category]} articles
+                        <span className="mt-1 block font-mono text-[0.62rem] uppercase tracking-[0.14em] text-muted">
+                          {meta.blurb}
                         </span>
+                      </span>
+                      <span className="tabular shrink-0 font-mono text-xs text-muted">
+                        {data.counts[category]}
                       </span>
                     </Link>
                   );
@@ -339,10 +354,10 @@ export default function Home() {
                   title="On this day"
                   hint="Historical events for today's date, from Wikipedia."
                 />
-                <ul className="glass divide-y divide-line/70">
+                <ul className="border-t border-line">
                   {data.onThisDay.map((event) => (
-                    <li key={`${event.year}-${event.text.slice(0, 20)}`} className="flex gap-4 p-4">
-                      <span className="font-mono text-sm font-bold text-accent2">{event.year}</span>
+                    <li key={`${event.year}-${event.text.slice(0, 20)}`} className="flex gap-4 border-b border-line py-3.5">
+                      <span className="tabular shrink-0 font-mono text-xs text-accent">{event.year}</span>
                       <div className="min-w-0">
                         <p className="text-sm leading-relaxed text-fg">{event.text}</p>
                         {event.pages.length > 0 && (

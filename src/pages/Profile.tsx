@@ -29,9 +29,9 @@ export default function Profile() {
       />
 
       <PageBody className="space-y-8">
-        <section aria-label="Account" className="glass p-6">
+        <section aria-label="Account" className="border border-line bg-surface p-6">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
-            <span className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-accent to-accent2 text-xl font-bold text-white shadow-card">
+            <span className="grid h-16 w-16 shrink-0 place-items-center border border-accent/60 bg-heading font-serif text-2xl font-bold text-bg">
               {user ? initials(displayName) : '?'}
             </span>
             <div className="min-w-0">
@@ -97,7 +97,7 @@ export default function Profile() {
               ))}
             </div>
           ) : (
-            <p className="glass px-4 py-6 text-sm text-muted">
+            <p className="border-t border-line py-6 text-sm text-muted">
               No topics followed yet. Choose some in Settings to personalise your dashboard.
             </p>
           )}
@@ -115,7 +115,7 @@ export default function Profile() {
             />
             <ul className="space-y-2">
               {saved.slice(0, 4).map((item) => (
-                <li key={item.id} className="glass p-4">
+                <li key={item.id} className="border-b border-line py-3.5">
                   <a
                     href={item.link}
                     target="_blank"

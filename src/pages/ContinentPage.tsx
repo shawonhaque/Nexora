@@ -125,9 +125,9 @@ export default function ContinentPage() {
                   type="button"
                   onClick={() => setCountry('all')}
                   aria-pressed={country === 'all'}
-                  className={`rounded-full border px-3.5 py-1.5 text-xs font-medium transition ${
+                  className={`border px-3 py-1.5 font-mono text-[0.66rem] uppercase tracking-[0.12em] transition ${
                     country === 'all'
-                      ? 'border-accent bg-accent/15 text-accent'
+                      ? 'border-heading bg-heading text-bg'
                       : 'border-line bg-elevated/40 text-muted hover:border-accent/50 hover:text-accent'
                   }`}
                 >
@@ -147,9 +147,9 @@ export default function ContinentPage() {
                         setPage(1);
                       }}
                       aria-pressed={country === name}
-                      className={`rounded-full border px-3.5 py-1.5 text-xs font-medium transition ${
+                      className={`border px-3 py-1.5 font-mono text-[0.66rem] uppercase tracking-[0.12em] transition ${
                         country === name
-                          ? 'border-accent bg-accent/15 text-accent'
+                          ? 'border-heading bg-heading text-bg'
                           : 'border-line bg-elevated/40 text-muted hover:border-accent/50 hover:text-accent'
                       }`}
                     >
@@ -202,7 +202,7 @@ export default function ContinentPage() {
                   <li key={entry.id}>
                     <Link
                       to={`/continent/${entry.id}`}
-                      className="inline-flex items-center gap-1.5 rounded-full border border-line bg-elevated/40 px-3 py-1.5 text-xs text-muted transition hover:border-accent/50 hover:text-accent"
+                      className="inline-flex items-center gap-1.5 border border-line px-3 py-1.5 font-mono text-[0.66rem] uppercase tracking-[0.12em] text-muted transition-colors hover:border-accent hover:text-accent"
                     >
                       <span aria-hidden="true">{entry.glyph}</span>
                       {entry.name}

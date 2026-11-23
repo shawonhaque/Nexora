@@ -62,3 +62,42 @@ Base path is `/Nexora/` by default, overridable with `VITE_BASE`.
   list back into view on change. Reset the page to 1 whenever a filter, sort,
   desk or query changes, otherwise the reader can be stranded on a page the new
   result set no longer has.
+
+## Visual language
+
+The UI is set as an editorial paper, not a dashboard. Keep it that way.
+
+- **Palette.** Warm cream stock and warm charcoal, with terracotta
+  (`--c-accent`) as the only opinionated colour and muted brass
+  (`--c-accent2`) as a secondary mark. Both themes are defined as RGB triplets
+  in `src/styles.css`. Do not reintroduce violet, cyan, or gradient fills.
+- **No gradients.** `bg-brand-glow` and `text-gradient` are kept as names for
+  older call sites but now render flat. Anything that needs emphasis uses the
+  accent colour, not a blend.
+- **Depth is hairlines, not shadows.** `.card` is just
+  `border border-line bg-surface`. There is no `.glass` class any more — do not
+  reintroduce translucency or `backdrop-blur` panels. Corners are square
+  (`borderRadius.DEFAULT` is `0px`). Radius is reserved for circular marks
+  (badges, avatars) and nothing else.
+- **Type.** Fraunces (serif) for every heading, Instrument Sans for body,
+  IBM Plex Mono for metadata. Weight carries the hierarchy: mastheads and
+  feature headlines are bold and tight, running text is light and open. Use
+  `.display` for page-level titles and `.kicker` / `.eyebrow` for small caps
+  labels.
+- **Texture.** `body` carries an inline SVG turbulence tile for paper grain.
+  It is fixed-attachment and very low opacity; keep it subtle.
+- **Layout is asymmetric on purpose.** `Home` runs a lead story at 7/12, a
+  secondary column at 5/12, then a text-only wire list. `ArticleCard` has three
+  variants — `featured`, `standard`, `text` — and `text` deliberately has no
+  image so lists can breathe without a grid of identical thumbnails. Do not
+  collapse these back into one uniform card grid.
+- **The rail is always dark.** `RootLayout` sets `.rail` on the sidebar and
+  drawer; `.rail` re-scopes the page tokens so links invert in both themes.
+  If you add a new component inside the rail, style it with `railfg` /
+  `text-railfg` utilities or it will inherit page ink and vanish.
+- **`--c-on-accent` exists for a reason.** Terracotta is dark in light mode but
+  lifted in dark mode, so white-on-accent only passes AA in light mode. Buttons
+  use `text-onaccent`, which flips per theme.
+- **Copy has a voice.** Empty and error states are dry and human — "Nothing
+  kept yet", "The wires are quiet". No exclamation marks, no "Oops", no
+  congratulating the reader for clicking things.

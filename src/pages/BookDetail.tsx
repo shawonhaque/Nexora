@@ -21,7 +21,7 @@ export default function BookDetail() {
     return (
       <div className="wrap py-20" aria-busy="true">
         <div className="grid gap-10 lg:grid-cols-[280px_1fr]">
-          <div className="aspect-[3/4] animate-pulse rounded-2xl bg-elevated" />
+          <div className="aspect-[3/4] animate-pulse bg-elevated" />
           <div className="space-y-4">
             <div className="h-9 w-3/4 animate-pulse rounded bg-elevated" />
             <div className="h-4 w-40 animate-pulse rounded bg-elevated" />
@@ -85,13 +85,13 @@ export default function BookDetail() {
               <img
                 src={cover}
                 alt={`Cover of ${book.title}`}
-                className="w-full rounded-2xl border border-line shadow-lift"
+                className="w-full border border-line shadow-lift"
                 loading="eager"
                 decoding="async"
               />
             ) : (
               <div
-                className="grid aspect-[3/4] place-items-center rounded-2xl border border-line bg-elevated p-6 text-center"
+                className="grid aspect-[3/4] place-items-center border border-line bg-elevated p-6 text-center"
                 aria-hidden="true"
               >
                 <span className="font-mono text-xs uppercase tracking-[0.2em] text-muted">
@@ -152,7 +152,7 @@ export default function BookDetail() {
                 </>
               )}
               {!canReadInline && pdf && book.file_visibility === 'restricted' && (
-                <p className="rounded-xl border border-line bg-surface px-4 py-3 text-xs text-muted">
+                <p className="border border-line bg-surface px-4 py-3 text-xs text-muted">
                   This file is restricted. Sign in with an authorised account to request access.
                 </p>
               )}
@@ -162,7 +162,7 @@ export default function BookDetail() {
                 </ButtonLink>
               )}
               {!canReadInline && !external && (
-                <p className="rounded-xl border border-line bg-surface px-4 py-3 text-xs text-muted">
+                <p className="border border-line bg-surface px-4 py-3 text-xs text-muted">
                   No readable file or external link has been added for this book yet.
                 </p>
               )}

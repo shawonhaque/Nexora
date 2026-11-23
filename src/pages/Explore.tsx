@@ -100,9 +100,9 @@ export default function Explore() {
               role="tab"
               aria-selected={tab === item.id}
               onClick={() => setTab(item.id)}
-              className={`inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-sm font-medium transition ${
+              className={`inline-flex items-center gap-2 border px-3.5 py-2 text-sm font-medium transition-colors ${
                 tab === item.id
-                  ? 'bg-accent/12 text-accent'
+                  ? 'bg-heading text-bg'
                   : 'text-muted hover:bg-elevated hover:text-heading'
               }`}
             >
@@ -131,8 +131,8 @@ export default function Explore() {
                 <button
                   type="button"
                   onClick={() => setCategory('all')}
-                  className={`rounded-lg px-2.5 py-1.5 text-xs font-medium transition ${
-                    category === 'all' ? 'bg-accent/12 text-accent' : 'text-muted hover:bg-elevated'
+                  className={`px-2.5 py-1.5 font-mono text-[0.66rem] uppercase tracking-[0.1em] transition-colors ${
+                    category === 'all' ? 'bg-heading text-bg' : 'text-muted hover:bg-elevated'
                   }`}
                 >
                   All
@@ -142,8 +142,8 @@ export default function Explore() {
                     key={item}
                     type="button"
                     onClick={() => setCategory(item)}
-                    className={`rounded-lg px-2.5 py-1.5 text-xs font-medium transition ${
-                      category === item ? 'bg-accent/12 text-accent' : 'text-muted hover:bg-elevated'
+                    className={`px-2.5 py-1.5 font-mono text-[0.66rem] uppercase tracking-[0.1em] transition-colors ${
+                      category === item ? 'bg-heading text-bg' : 'text-muted hover:bg-elevated'
                     }`}
                   >
                     {CATEGORY_META[item].label}
@@ -210,7 +210,7 @@ export default function Explore() {
                     href={model.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="glass glass-hover flex flex-col gap-2 p-4"
+                    className="flex flex-col gap-2 border-b border-line py-3"
                   >
                     <span className="font-mono text-xs text-muted">{model.author}</span>
                     <span className="font-semibold leading-snug text-heading">{model.id.split('/').pop()}</span>
@@ -223,7 +223,7 @@ export default function Explore() {
                 ))}
               </div>
             ) : (
-              <p className="glass px-4 py-6 text-sm text-muted">
+              <p className="border-t border-line py-6 text-sm text-muted">
                 The model feed is unavailable right now. Try refresh.
               </p>
             )}
@@ -255,7 +255,7 @@ export default function Explore() {
                     href={repo.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="glass glass-hover flex flex-col gap-2 p-4"
+                    className="flex flex-col gap-2 border-b border-line py-3"
                   >
                     <span className="font-mono text-sm font-semibold text-accent">{repo.fullName}</span>
                     {repo.description && (
@@ -270,7 +270,7 @@ export default function Explore() {
                 ))}
               </div>
             ) : (
-              <p className="glass px-4 py-6 text-sm text-muted">
+              <p className="border-t border-line py-6 text-sm text-muted">
                 The GitHub search API is unavailable or rate limited. Try refresh.
               </p>
             )}
@@ -371,7 +371,7 @@ function TopicExplorer({
       </div>
 
       {state === 'loading' && (
-        <div className="glass space-y-3 p-5">
+        <div className="space-y-3 border border-line bg-surface p-5">
           <div className="skeleton h-6 w-1/3" />
           <div className="skeleton h-4 w-full" />
           <div className="skeleton h-4 w-5/6" />
@@ -381,14 +381,14 @@ function TopicExplorer({
       {state === 'error' && <ErrorState message={error} onRetry={() => void lookUp(topic)} />}
 
       {summary && state === 'idle' && (
-        <article className="glass overflow-hidden">
+        <article className="overflow-hidden border border-line bg-surface">
           <div className="flex flex-col gap-5 p-5 sm:flex-row">
             {summary.thumbnail && (
               <img
                 src={summary.thumbnail}
                 alt=""
                 loading="lazy"
-                className="h-32 w-full rounded-xl object-cover sm:w-48"
+                className="h-32 w-full object-cover sm:w-48"
               />
             )}
             <div className="min-w-0">
@@ -419,9 +419,9 @@ function TopicExplorer({
                 type="button"
                 onClick={() => onToggle(item)}
                 aria-pressed={followed}
-                className={`inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-sm font-medium transition ${
+                className={`inline-flex items-center gap-2 border px-3 py-2 text-sm font-medium transition-colors ${
                   followed
-                    ? 'border-accent bg-accent/12 text-accent'
+                    ? 'border-heading bg-heading text-bg'
                     : 'border-line text-muted hover:border-accent/50 hover:text-accent'
                 }`}
               >

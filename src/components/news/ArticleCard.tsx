@@ -61,27 +61,45 @@ export function Icon({ name, className = 'h-4 w-4' }: { name: IconName; classNam
   );
 }
 
-/** Category pill linking to that section. */
+/** Category label. A rule and a word, not a pill. */
 export function CategoryTag({ category }: { category: NewsArticle['category'] }) {
   const meta = CATEGORY_META[category];
   return (
     <Link
       to={meta.path}
-      className="inline-flex items-center rounded-full border border-accent/35 bg-accent/10 px-2.5 py-0.5 text-[0.7rem] font-semibold uppercase tracking-wide text-accent transition hover:bg-accent/20"
+      className="inline-flex items-center gap-1.5 font-mono text-[0.62rem] uppercase tracking-[0.16em] text-accent transition-colors hover:text-heading"
     >
+      <span aria-hidden="true" className="h-px w-3 bg-accent" />
       {meta.label}
     </Link>
   );
 }
 
 /**
- * One article card. Source, timestamp and summary all come from the publisher.
- * The save control writes to the personalisation store.
+ * One article card.
+ *
+ * Three shapes, chosen by the caller so a page can build a magazine rhythm
+ * instead of an even grid:
+ *  - `featured` — large image on top, oversized serif headline.
+ *  - `standard` — image, headline, summary.
+ *  - `text` — no image at all; a rule, a headline and a byline. Used where
+ *    the publisher supplied no image, and for secondary items in a column.
+ *
+ * Source, timestamp and summary all come from the publisher. The save
+ * control writes to the personalisation store.
  */
-export function ArticleCard({ article, compact = false }: { article: NewsArticle; compact?: boolean }) {
+export function ArticleCard({
+  article,
+  variant = 'standard',
+}: {
+  article: NewsArticle;
+  variant?: 'featured' | 'standard' | 'text';
+}) {
   const { isSaved, saveArticle, unsaveArticle, recordView } = usePersonalization();
   const saved = isSaved(article.id);
   const image = safeUrl(article.image);
+  const showImage = Boolean(image) && variant !== 'text';
+  const isFeatured = variant === 'featured';
 
   function toggleSave(event: React.MouseEvent) {
     event.preventDefault();
@@ -111,16 +129,26 @@ export function ArticleCard({ article, compact = false }: { article: NewsArticle
     });
   }
 
+  const headline = isFeatured
+    ? 'display text-[1.9rem] sm:text-[2.5rem] lg:text-[2.85rem]'
+    : variant === 'text'
+      ? 'font-serif text-[1.04rem] font-medium leading-snug text-heading'
+      : 'font-serif text-[1.2rem] font-semibold leading-snug text-heading';
+
   return (
-    <article className="glass glass-hover group flex flex-col overflow-hidden">
-      {image && !compact && (
-        <div className="aspect-[16/9] w-full overflow-hidden bg-elevated">
+    <article
+      className={`group flex flex-col ${
+        variant === 'text' ? 'border-t border-line pt-4' : 'border border-line bg-surface'
+      } ${isFeatured ? 'border-0 bg-transparent' : ''}`}
+    >
+      {showImage && (
+        <div className={`overflow-hidden bg-elevated ${isFeatured ? 'aspect-[16/9]' : 'aspect-[16/10]'}`}>
           <img
-            src={image}
+            src={image ?? undefined}
             alt=""
             loading="lazy"
             decoding="async"
-            className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]"
+            className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.02]"
             onError={(event) => {
               // Publisher images occasionally 404; drop the frame rather than
               // leaving a broken-image icon in the layout.
@@ -131,7 +159,7 @@ export function ArticleCard({ article, compact = false }: { article: NewsArticle
         </div>
       )}
 
-      <div className="flex flex-1 flex-col gap-3 p-5">
+      <div className={variant === 'text' ? 'flex flex-1 flex-col gap-2' : 'flex flex-1 flex-col gap-3 p-4 sm:p-5'}>
         <div className="flex items-center justify-between gap-3">
           <CategoryTag category={article.category} />
           <button
@@ -139,37 +167,40 @@ export function ArticleCard({ article, compact = false }: { article: NewsArticle
             onClick={toggleSave}
             aria-pressed={saved}
             aria-label={saved ? 'Remove from saved articles' : 'Save this article'}
-            className={`grid h-8 w-8 shrink-0 place-items-center rounded-lg border transition ${
+            title={saved ? 'Saved' : 'Save for later'}
+            className={`grid h-7 w-7 shrink-0 place-items-center border transition-colors ${
               saved
-                ? 'border-accent bg-accent/15 text-accent'
-                : 'border-line text-muted hover:border-accent/50 hover:text-accent'
+                ? 'border-accent text-accent'
+                : 'border-transparent text-muted/70 hover:border-line hover:text-accent'
             }`}
           >
-            <Icon name="bookmark" className="h-4 w-4" />
+            <Icon name="bookmark" className="h-3.5 w-3.5" />
           </button>
         </div>
 
-        <h3 className="text-[1.02rem] font-semibold leading-snug text-heading">
+        <h3 className={headline}>
           <a
             href={article.link}
             target="_blank"
             rel="noopener noreferrer"
-            className="transition hover:text-accent"
+            className="transition-colors hover:text-accent"
             onClick={onOpen}
           >
             {article.title}
           </a>
         </h3>
 
-        {article.summary && !compact && (
-          <p className="text-sm leading-relaxed text-muted">{truncate(article.summary, 170)}</p>
+        {article.summary && variant !== 'text' && (
+          <p className={`leading-relaxed text-muted ${isFeatured ? 'max-w-2xl text-[0.98rem]' : 'text-sm'}`}>
+            {truncate(article.summary, isFeatured ? 240 : 150)}
+          </p>
         )}
 
-        <div className="mt-auto flex flex-wrap items-center gap-x-3 gap-y-1 pt-2 text-xs text-muted">
-          <span className="font-medium text-fg">{article.source}</span>
+        <div className="mt-auto flex flex-wrap items-center gap-x-2.5 gap-y-1 pt-1.5 font-mono text-[0.66rem] uppercase tracking-[0.1em] text-muted">
+          <span className="font-sans font-semibold normal-case tracking-normal text-fg">{article.source}</span>
           {article.publishedAt && (
             <>
-              <span aria-hidden="true">·</span>
+              <span aria-hidden="true" className="text-line">/</span>
               <time dateTime={article.publishedAt}>{relativeTime(article.publishedAt)}</time>
             </>
           )}
@@ -177,10 +208,10 @@ export function ArticleCard({ article, compact = false }: { article: NewsArticle
             href={article.link}
             target="_blank"
             rel="noopener noreferrer"
-            className="ml-auto inline-flex items-center gap-1 font-medium text-accent hover:underline"
+            className="ml-auto inline-flex items-center gap-1 text-accent hover:text-heading"
             onClick={onOpen}
           >
-            Read <Icon name="external" className="h-3.5 w-3.5" />
+            Read <Icon name="external" className="h-3 w-3" />
           </a>
         </div>
       </div>
@@ -193,13 +224,13 @@ export function ArticleSkeleton({ count = 6 }: { count?: number }) {
   return (
     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3" aria-hidden="true">
       {Array.from({ length: count }).map((_, index) => (
-        <div key={index} className="glass overflow-hidden">
-          <div className="skeleton aspect-[16/9] rounded-none" />
+        <div key={index} className="border border-line bg-surface">
+          <div className="skeleton aspect-[16/10]" />
           <div className="space-y-3 p-5">
-            <div className="skeleton h-5 w-24" />
+            <div className="skeleton h-3 w-24" />
             <div className="skeleton h-4 w-full" />
             <div className="skeleton h-4 w-4/5" />
-            <div className="skeleton h-3 w-1/3" />
+            <div className="skeleton h-2.5 w-1/3" />
           </div>
         </div>
       ))}
@@ -207,16 +238,55 @@ export function ArticleSkeleton({ count = 6 }: { count?: number }) {
   );
 }
 
+/**
+ * Small hand-drawn marks for empty and error states. Deliberately rough:
+ * slightly uneven strokes, no symmetry. An illustration that looks drawn
+ * beats an icon that looks generated.
+ */
+function EmptyMark({ kind }: { kind: 'empty' | 'error' }) {
+  return (
+    <svg
+      viewBox="0 0 96 72"
+      className="h-16 w-auto text-line"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.4"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      {kind === 'error' ? (
+        <>
+          <path d="M14 58c4-1 8-1 12 0M70 58c4-1 8-1 12 0" />
+          <path d="M30 18 48 50l18-32" stroke="rgb(var(--c-accent))" />
+          <path d="M24 12c14 3 30 3 46-1" opacity="0.55" />
+          <path d="M41 33c4-2 9-2 13 1" stroke="rgb(var(--c-accent))" />
+        </>
+      ) : (
+        <>
+          {/* an open, mostly empty page */}
+          <path d="M20 14c10-2 20-2 28 2v44c-8-4-18-4-28-2V14Z" />
+          <path d="M76 14c-10-2-20-2-28 2v44c8-4 18-4 28-2V14Z" />
+          <path d="M30 28h10M30 37h13M56 30h10" opacity="0.5" />
+          <path d="M56 40c3-3 7-3 10 0" stroke="rgb(var(--c-accent))" />
+        </>
+      )}
+    </svg>
+  );
+}
+
 /** Error state that always offers a retry, used across every data page. */
 export function ErrorState({ message, onRetry }: { message: string; onRetry?: () => void }) {
   return (
-    <div className="glass flex flex-col items-center gap-3 border-red-500/40 bg-red-500/5 px-6 py-12 text-center">
-      <div className="text-2xl text-red-400" aria-hidden="true">⚠</div>
-      <h3 className="text-base font-semibold">This content could not be loaded</h3>
-      <p className="max-w-md text-sm leading-relaxed text-muted">{message}</p>
+    <div className="flex flex-col items-start gap-4 border-l-2 border-accent bg-surface px-6 py-10">
+      <EmptyMark kind="error" />
+      <div>
+        <h3 className="font-serif text-lg text-heading">That did not come through</h3>
+        <p className="mt-1.5 max-w-md text-sm leading-relaxed text-muted">{message}</p>
+      </div>
       {onRetry && (
-        <button type="button" onClick={onRetry} className="btn-ghost mt-2">
-          <Icon name="refresh" className="h-4 w-4" /> Try again
+        <button type="button" onClick={onRetry} className="btn-ghost">
+          <Icon name="refresh" className="h-4 w-4" /> Try that again
         </button>
       )}
     </div>
@@ -226,12 +296,12 @@ export function ErrorState({ message, onRetry }: { message: string; onRetry?: ()
 /** Empty state for a filter or search that matched nothing. */
 export function EmptyState({ title, message, action }: { title: string; message: string; action?: React.ReactNode }) {
   return (
-    <div className="glass flex flex-col items-center gap-3 px-6 py-14 text-center">
-      <div className="text-2xl text-muted" aria-hidden="true">
-        <Icon name="compass" className="h-7 w-7" />
+    <div className="flex flex-col items-start gap-4 border-t border-line px-2 py-14">
+      <EmptyMark kind="empty" />
+      <div>
+        <h3 className="font-serif text-lg text-heading">{title}</h3>
+        <p className="mt-1.5 max-w-md text-sm leading-relaxed text-muted">{message}</p>
       </div>
-      <h3 className="text-base font-semibold">{title}</h3>
-      <p className="max-w-md text-sm leading-relaxed text-muted">{message}</p>
       {action}
     </div>
   );

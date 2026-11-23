@@ -95,7 +95,7 @@ export default function World() {
               </div>
             </section>
 
-            <section aria-labelledby="map-heading" className="glass p-5 sm:p-7">
+            <section aria-labelledby="map-heading" className="border border-line bg-surface p-5 sm:p-7">
               <SubHeading
                 id="map-heading"
                 title="Choose a continent"
@@ -127,7 +127,7 @@ export default function World() {
                   ))}
                 </div>
               ) : (
-                <EmptyState title="No articles in the snapshot" message="The feed snapshot is empty. Try refreshing." />
+                <EmptyState title="The wires are quiet" message="This snapshot came back empty. Refresh, or give the newsrooms a minute and come back." />
               )}
             </section>
 
@@ -138,7 +138,7 @@ export default function World() {
                   <li key={continent.id}>
                     <Link
                       to={`/continent/${continent.id}`}
-                      className="inline-flex items-center gap-1.5 rounded-full border border-line bg-elevated/40 px-3 py-1.5 text-xs text-muted transition hover:border-accent/50 hover:text-accent"
+                      className="inline-flex items-center gap-1.5 border border-line px-3 py-1.5 font-mono text-[0.66rem] uppercase tracking-[0.12em] text-muted transition-colors hover:border-accent hover:text-accent"
                     >
                       <span aria-hidden="true">{continent.glyph}</span>
                       {CONTINENT_META[continent.id].name}
