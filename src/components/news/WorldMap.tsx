@@ -77,77 +77,74 @@ export function WorldMap({
 
   return (
     <div className="relative">
-      <svg
-        viewBox="0 0 1000 500"
-        className="w-full"
-        role="group"
-        aria-label="Interactive world map. Choose a continent to open its live news."
-      >
-        <defs>
-          <linearGradient id="map-active" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="rgb(var(--c-accent))" stopOpacity="0.9" />
-            <stop offset="100%" stopColor="rgb(var(--c-accent2))" stopOpacity="0.65" />
-          </linearGradient>
-        </defs>
-
-        {SHAPES.map((shape) => {
-          const isActive = focus === shape.id;
-          const continent = CONTINENTS.find((item) => item.id === shape.id);
-          return (
-            <g key={shape.id}>
-              <path
-                d={shape.path}
-                role="button"
-                tabIndex={0}
-                aria-label={`${continent?.name}: ${counts[shape.id] ?? 0} articles`}
-                aria-pressed={active === shape.id}
-                onClick={() => onSelect(shape.id)}
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter' || event.key === ' ') {
-                    event.preventDefault();
-                    onSelect(shape.id);
-                  }
-                }}
-                onMouseEnter={() => setHovered(shape.id)}
-                onMouseLeave={() => setHovered(null)}
-                onFocus={() => setHovered(shape.id)}
-                onBlur={() => setHovered(null)}
-                className="cursor-pointer outline-none transition-all duration-200"
-                style={{
-                  fill: isActive ? 'url(#map-active)' : 'currentColor',
-                  fillOpacity: isActive ? 0.9 : 0.12,
-                  stroke: isActive ? 'rgb(var(--c-accent))' : 'currentColor',
-                  strokeOpacity: isActive ? 0.9 : 0.28,
-                  strokeWidth: isActive ? 2 : 1.2,
-                }}
-              />
-              <text
-                x={shape.label.x}
-                y={shape.label.y}
-                textAnchor="middle"
-                className="pointer-events-none select-none"
-                style={{
-                  fontSize: 15,
-                  fontWeight: 600,
-                  fill: isActive ? '#fff' : 'currentColor',
-                  opacity: isActive ? 1 : 0.55,
-                }}
-              >
-                {continent?.short}
-              </text>
-              <text
-                x={shape.label.x}
-                y={shape.label.y + 17}
-                textAnchor="middle"
-                className="pointer-events-none select-none font-mono"
-                style={{ fontSize: 11, fill: isActive ? '#fff' : 'currentColor', opacity: isActive ? 0.9 : 0.4 }}
-              >
-                {counts[shape.id] ?? 0}
-              </text>
-            </g>
-          );
-        })}
-      </svg>
+      {/* The 1000-unit viewBox would shrink labels to ~6px on a phone, so the
+          map keeps a floor width and scrolls sideways instead. */}
+      <div className="overflow-x-auto scrollbar-thin">
+        <svg
+          viewBox="0 0 1000 500"
+          className="w-full min-w-[640px]"
+          role="group"
+          aria-label="Interactive world map. Choose a continent to open its live news."
+        >
+          {SHAPES.map((shape) => {
+            const isActive = focus === shape.id;
+            const continent = CONTINENTS.find((item) => item.id === shape.id);
+            return (
+              <g key={shape.id}>
+                <path
+                  d={shape.path}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`${continent?.name}: ${counts[shape.id] ?? 0} articles`}
+                  aria-pressed={active === shape.id}
+                  onClick={() => onSelect(shape.id)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault();
+                      onSelect(shape.id);
+                    }
+                  }}
+                  onMouseEnter={() => setHovered(shape.id)}
+                  onMouseLeave={() => setHovered(null)}
+                  onFocus={() => setHovered(shape.id)}
+                  onBlur={() => setHovered(null)}
+                  className="cursor-pointer outline-none transition-colors duration-200"
+                  style={{
+                    fill: isActive ? 'rgb(var(--c-accent) / 0.16)' : 'rgb(var(--c-muted) / 0.16)',
+                    stroke: isActive ? 'rgb(var(--c-accent))' : 'rgb(var(--c-muted) / 0.7)',
+                    strokeWidth: isActive ? 2 : 1.2,
+                  }}
+                />
+                <text
+                  x={shape.label.x}
+                  y={shape.label.y}
+                  textAnchor="middle"
+                  className="pointer-events-none select-none"
+                  style={{
+                    fontSize: 15,
+                    fontWeight: 600,
+                    fill: isActive ? 'rgb(var(--c-accent))' : 'rgb(var(--c-heading))',
+                  }}
+                >
+                  {continent?.short}
+                </text>
+                <text
+                  x={shape.label.x}
+                  y={shape.label.y + 17}
+                  textAnchor="middle"
+                  className="pointer-events-none select-none font-mono"
+                  style={{
+                    fontSize: 11,
+                    fill: isActive ? 'rgb(var(--c-accent))' : 'rgb(var(--c-muted))',
+                  }}
+                >
+                  {counts[shape.id] ?? 0}
+                </text>
+              </g>
+            );
+          })}
+        </svg>
+      </div>
 
       <p className="mt-2 text-center text-xs text-muted">
         Outlines are simplified for navigation. Counts are live articles in the current snapshot.

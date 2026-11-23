@@ -95,6 +95,13 @@ The UI is set as an editorial paper, not a dashboard. Keep it that way.
   drawer; it paints `bg-bg` and separates with a hairline on its inner edge, so
   the sidebar reads as part of the sheet rather than a dark appliance. Style
   anything inside it with the ordinary page tokens.
+- **The world map is tinted with ink, not with a fill colour.** `WorldMap`
+  draws continents as `muted` at 16% with a 70% stroke; on the cream page that
+  is only ~1.25:1, so the labels carry the reading, not the shapes. If you
+  darken the fill to make the shapes pop, they will fight the headlines.
+  Its 1000-unit viewBox scales text down with the box, so the map has a
+  640px floor width and scrolls sideways on phones — without it the labels
+  render at 6px.
 - **`--c-on-accent` exists for a reason.** Terracotta is dark in light mode but
   lifted in dark mode, so white-on-accent only passes AA in light mode. Buttons
   use `text-onaccent`, which flips per theme.
