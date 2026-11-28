@@ -1,6 +1,8 @@
 import { useEffect } from 'react';
 
 const SITE_NAME = 'NEXORA';
+/** Social card for pages that have no image of their own; matches the static shell. */
+const DEFAULT_IMAGE = '/og-cover.jpg';
 
 function upsertMeta(selector: string, attrs: Record<string, string>) {
   let element = document.head.querySelector<HTMLMetaElement>(selector);
@@ -57,17 +59,15 @@ export function PageMeta({ title, description, image, noIndex = false, jsonLd = 
     upsertMeta('meta[property="og:type"]', { property: 'og:type', content: jsonLd ? 'article' : 'website' });
     upsertMeta('meta[property="og:site_name"]', { property: 'og:site_name', content: SITE_NAME });
     upsertMeta('meta[property="og:url"]', { property: 'og:url', content: canonical });
-    upsertMeta('meta[name="twitter:card"]', {
-      name: 'twitter:card',
-      content: image ? 'summary_large_image' : 'summary',
-    });
-    upsertMeta('meta[name="twitter:title"]', { name: 'twitter:title', content: fullTitle });
+    const card = image ?? DEFAULT_IMAGE;
+    const absoluteImage = card.startsWith('http')
+      ? card
+      : `${origin}${base.replace(/\/$/, '')}${card}`;
 
-    if (image) {
-      const absoluteImage = image.startsWith('http') ? image : `${origin}${image}`;
-      upsertMeta('meta[property="og:image"]', { property: 'og:image', content: absoluteImage });
-      upsertMeta('meta[name="twitter:image"]', { name: 'twitter:image', content: absoluteImage });
-    }
+    upsertMeta('meta[name="twitter:card"]', { name: 'twitter:card', content: 'summary_large_image' });
+    upsertMeta('meta[property="og:image"]', { property: 'og:image', content: absoluteImage });
+    upsertMeta('meta[name="twitter:image"]', { name: 'twitter:image', content: absoluteImage });
+    upsertMeta('meta[name="twitter:title"]', { name: 'twitter:title', content: fullTitle });
 
     upsertMeta('meta[name="robots"]', {
       name: 'robots',
