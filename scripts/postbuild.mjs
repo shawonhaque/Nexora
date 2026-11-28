@@ -104,7 +104,9 @@ const sitemap = [
   '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
   ...ROUTES.filter((route) => route.public).map(
     ({ path, priority, changefreq }) =>
-      `  <url><loc>${SITE}${path}</loc>` +
+      // The shell is written to <route>/index.html and Pages redirects /route to
+      // /route/, so advertising the redirecting form costs a hop on every click.
+      `  <url><loc>${SITE}${path === '/' ? '/' : `${path}/`}</loc>` +
       `<lastmod>${today}</lastmod>` +
       `<changefreq>${changefreq}</changefreq>` +
       `<priority>${priority}</priority></url>`
